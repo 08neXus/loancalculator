@@ -1,254 +1,168 @@
-/* Suggested monthly interest (%) by term */
-const suggested = { 0:0, 3:1.5, 6:2, 9:2.5, 12:3, 24:4 };
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Installment Calculator</title>
 
-/* Elements */
-const priceEl = document.getElementById('price');
-const termEl = document.getElementById('term');
-const interestTypeEl = document.getElementById('interestType');
-const customToggleEl = document.getElementById('customToggle');
-const customInterestEl = document.getElementById('customInterest');
+  <!-- Roboto + Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
-const downToggleEl = document.getElementById('downToggle');
-const downPaymentEl = document.getElementById('downPayment');
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <img class="brand-icon" src="icon.png" alt="app icon">
+      <div>
+        <h1 class="title">Installment Calculator</h1>
+        <p class="subtitle">nexus</p>
+      </div>
+    </header>
 
-const calcBtn = document.getElementById('calcBtn');
-const clearBtn = document.getElementById('clearBtn');
-const breakdownTbody = document.querySelector('#breakdown tbody');
-const toast = document.getElementById('toast');
-const summaryCard = document.getElementById('summaryCard');
-const principalVal = document.getElementById('principalVal');
-const totalInterestVal = document.getElementById('totalInterestVal');
-const monthlyVal = document.getElementById('monthlyVal');
+    <section class="card">
+      <div class="row">
+        <label class="label">Item Price (₱)</label>
+        <input id="price" type="number" inputmode="decimal" placeholder="Enter item price" />
+      </div>
 
-const totalAfterRow = document.getElementById('totalAfterRow');
-const totalAfterVal = document.getElementById('totalAfterVal');
+      <!-- DOWNPAYMENT OPTIONAL -->
+      <div class="row">
+        <label class="label">Use downpayment (optional)</label>
+        <div class="row two-col">
+          <div class="col">
+            <input type="checkbox" id="downToggle" />
+          </div>
+          <div class="col">
+            <input id="downPayment" type="number" placeholder="Enter downpayment amount" disabled />
+          </div>
+        </div>
+      </div>
 
-const matrixBtn = document.getElementById('matrixBtn');
-const matrixModal = document.getElementById('matrixModal');
-const closeMatrix = document.getElementById('closeMatrix');
+      <!-- Payment Term + Interest Type -->
+      <div class="row two-col">
+        <div class="col">
+          <label class="label">Payment Term</label>
+          <select id="term" onchange="updateAutoRate()">
+            <option value="0" selected>0 months (full payment)</option>
+            <option value="3">3 months</option>
+            <option value="6">6 months</option>
+            <option value="9">9 months</option>
+            <option value="12">12 months</option>
+            <option value="24">24 months</option>
+          </select>
+        </div>
 
-/* Init states */
-customInterestEl.disabled = true;
-downPaymentEl.disabled = true;
+        <div class="col">
+          <label class="label">Interest Type</label>
+          <select id="interestType">
+            <option value="amortized">Amortized</option>
+            <option value="simple" selected>Simple (Monthly Add-On)</option>
+            <option value="fixed">Fixed</option>
+            <option value="compound">Compound</option>
+          </select>
+        </div>
+      </div>
 
-/* Auto rate */
-function updateAutoRate(){
-  if (!customToggleEl.checked){
-    const t = parseInt(termEl.value,10);
-    customInterestEl.value = suggested[t].toFixed(2);
-  }
-}
-termEl.addEventListener('change', updateAutoRate);
-updateAutoRate();
+      <!-- Custom interest -->
+      <div class="row">
+        <label class="label">Use custom interest rate</label>
+        <div class="row two-col">
+          <div class="col">
+            <input type="checkbox" id="customToggle" />
+          </div>
+          <div class="col">
+            <input id="customInterest" type="number" placeholder="Enter custom interest %" disabled />
+          </div>
+        </div>
+      </div>
 
-/* Toggle custom interest */
-customToggleEl.addEventListener('change', () => {
-  customInterestEl.disabled = !customToggleEl.checked;
-  if (!customToggleEl.checked) updateAutoRate();
-});
+      <div class="row btn-row">
+        <button id="calcBtn" class="btn primary">
+          <span class="material-symbols-outlined">calculate</span> Calculate
+        </button>
+        <button id="clearBtn" class="btn neutral">
+          <span class="material-symbols-outlined">refresh</span> Clear
+        </button>
+      </div>
 
-/* Toggle downpayment */
-downToggleEl.addEventListener('change', () => {
-  downPaymentEl.disabled = !downToggleEl.checked;
-  if (!downToggleEl.checked) downPaymentEl.value = '';
-});
+      <!-- MATRIX BUTTON -->
+      <div class="matrix-btn-row">
+        <button id="matrixBtn" class="btn neutral">
+          <span class="material-symbols-outlined">table_chart</span> View Add-On Matrix
+        </button>
+      </div>
 
-/* Toast */
-function showToast(msg){
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(()=> toast.classList.remove('show'), 2400);
-}
+      <!-- POPUP MODAL -->
+      <div id="matrixModal" class="popup-overlay" aria-hidden="true">
+        <div class="popup" role="dialog" aria-modal="true">
+          <h3>Monthly Add-On Interest Matrix</h3>
+          <table class="matrix-table">
+            <thead>
+              <tr><th>Term</th><th>Rate</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>0%</td></tr>
+              <tr><td>3</td><td>1.5%</td></tr>
+              <tr><td>6</td><td>2%</td></tr>
+              <tr><td>9</td><td>2.5%</td></tr>
+              <tr><td>12</td><td>3%</td></tr>
+              <tr><td>24</td><td>4%</td></tr>
+            </tbody>
+          </table>
+          <button id="closeMatrix" class="btn primary" style="margin-top:16px">Close</button>
+        </div>
+      </div>
 
-/* Format currency */
-function toPHP(n){
-  return Number(n).toLocaleString('en-PH', { style:'currency', currency:'PHP' });
-}
+      <!-- SUMMARY -->
+      <div class="row summary-row hidden" id="summaryCard">
+        <div class="summary-item">
+          <div class="s-label">Principal</div>
+          <div class="s-value" id="principalVal">—</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-label">Total interest</div>
+          <div class="s-value" id="totalInterestVal">—</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-label">Monthly</div>
+          <div class="s-value" id="monthlyVal">—</div>
+        </div>
+      </div>
 
-/* Build table row */
-function row(i,begBal,interestAmt,principalAmt,endBal){
-  return `<tr>
-    <td>${i}</td>
-    <td>${toPHP(begBal)}</td>
-    <td>${toPHP(interestAmt)}</td>
-    <td>${toPHP(principalAmt)}</td>
-    <td>${toPHP(endBal)}</td>
-  </tr>`;
-}
+      <!-- TOTAL AMOUNT PAYABLE -->
+      <div id="totalAfterRow" class="row total-full-card hidden">
+        <div class="total-full-inner">
+          <div class="t-label">Total Amount Payable</div>
+          <div class="t-value" id="totalAfterVal">—</div>
+        </div>
+      </div>
 
-/* Calculate */
-calcBtn.addEventListener('click', () => {
-  let originalPrice = parseFloat(priceEl.value);
-  if (isNaN(originalPrice) || originalPrice <= 0){
-    alert('Enter a valid item price');
-    return;
-  }
+      <!-- BREAKDOWN -->
+      <div class="table-wrapper">
+        <table id="breakdown" class="table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Beg Bal</th>
+              <th>Interest</th>
+              <th>Principal</th>
+              <th>End Bal</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
-  const term = parseInt(termEl.value,10);
-  const interestType = interestTypeEl.value;
+    <div id="toast" class="toast">Cleared</div>
 
-  /* Downpayment */
-  let downAmt = 0;
-  if (downToggleEl.checked){
-    downAmt = parseFloat(downPaymentEl.value);
-    if (isNaN(downAmt) || downAmt < 0){
-      alert('Enter a valid downpayment');
-      return;
-    }
-    if (downAmt >= originalPrice){
-      alert('Downpayment must be less than item price');
-      return;
-    }
-  }
+    <footer class="footer">
+      © Created by melvinpangilinan
+    </footer>
+  </main>
 
-  /* Determine interest rate */
-  let ratePct;
-  if (customToggleEl.checked){
-    ratePct = parseFloat(customInterestEl.value);
-    if (isNaN(ratePct) || ratePct < 0){
-      alert('Enter a valid custom interest %');
-      return;
-    }
-  } else {
-    ratePct = suggested[term];
-  }
-
-  const r = ratePct / 100;
-  const principal = originalPrice - downAmt;
-
-  breakdownTbody.innerHTML = '';
-  let monthlyPayment = 0;
-  let totalInterest = 0;
-
-  /* FULL PAYMENT OPTION — TERM = 0 */
-  if (term === 0){
-    breakdownTbody.insertAdjacentHTML('beforeend',
-      row(1, principal, 0, principal, 0)
-    );
-
-    monthlyPayment = principal;
-    totalInterest = 0;
-
-    summaryCard.classList.remove('hidden');
-    totalAfterRow.classList.remove('hidden');
-    principalVal.textContent = toPHP(principal);
-    totalInterestVal.textContent = toPHP(0);
-    monthlyVal.textContent = toPHP(principal);
-    totalAfterVal.textContent = toPHP(principal);
-
-    showToast('Calculation done');
-    return;
-  }
-
-  /* SIMPLE (ADD-ON) */
-  if (interestType === 'simple'){
-    totalInterest = principal * r * term;
-    monthlyPayment = (principal + totalInterest) / term;
-    const monthlyPrincipal = principal / term;
-    const monthlyInterest = totalInterest / term;
-
-    for (let i=1;i<=term;i++){
-      const beginning = +(principal - monthlyPrincipal*(i-1));
-      const endBal = +(principal - monthlyPrincipal*i).toFixed(2);
-      breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, monthlyInterest, monthlyPrincipal, Math.max(endBal,0))
-      );
-    }
-
-  /* AMORTIZED */
-  } else if (interestType === 'amortized'){
-    monthlyPayment = r===0 ? principal/term : (principal*r)/(1-Math.pow(1+r,-term));
-    let remaining = principal;
-    for (let i=1;i<=term;i++){
-      const interest = +(remaining * r);
-      const principalPaid = +(monthlyPayment - interest);
-      const endBal = +(remaining - principalPaid);
-      breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, remaining, interest, principalPaid, Math.max(endBal,0))
-      );
-      remaining = endBal;
-      totalInterest += interest;
-    }
-
-  /* FIXED */
-  } else if (interestType === 'fixed'){
-    const interestAmt = principal * r;
-    const monthlyPrincipal = principal / term;
-    monthlyPayment = monthlyPrincipal + interestAmt;
-    totalInterest = interestAmt * term;
-    let balRem = principal;
-
-    for (let i=1;i<=term;i++){
-      const beginning = balRem;
-      balRem -= monthlyPrincipal;
-      breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, interestAmt, monthlyPrincipal, Math.max(balRem,0))
-      );
-    }
-
-  /* COMPOUND */
-  } else if (interestType === 'compound'){
-    let bal = principal;
-    monthlyPayment = principal / term;
-
-    for (let i=1;i<=term;i++){
-      const interest = +(bal * r);
-      const principalPaid = monthlyPayment;
-      const endBal = +(bal + interest - principalPaid);
-
-      breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, bal, interest, principalPaid, Math.max(endBal,0))
-      );
-
-      totalInterest += interest;
-      bal = endBal;
-    }
-  }
-
-  /* SUMMARY OUTPUT */
-  summaryCard.classList.remove('hidden');
-  totalAfterRow.classList.remove('hidden');
-
-  principalVal.textContent = toPHP(principal);
-  totalInterestVal.textContent = toPHP(totalInterest);
-  monthlyVal.textContent = toPHP(monthlyPayment);
-
-  const totalAfter = principal + totalInterest;
-  totalAfterVal.textContent = toPHP(totalAfter);
-
-  showToast('Calculation done');
-});
-
-/* CLEAR */
-clearBtn.addEventListener('click', ()=>{
-  priceEl.value='';
-  downToggleEl.checked=false;
-  downPaymentEl.value='';
-  downPaymentEl.disabled=true;
-
-  customToggleEl.checked=false;
-  customInterestEl.value='';
-  customInterestEl.disabled=true;
-
-  breakdownTbody.innerHTML='';
-  summaryCard.classList.add('hidden');
-  totalAfterRow.classList.add('hidden');
-
-  principalVal.textContent='—';
-  totalInterestVal.textContent='—';
-  monthlyVal.textContent='—';
-  totalAfterVal.textContent='—';
-
-  showToast('Cleared');
-});
-
-/* MATRIX MODAL */
-matrixBtn.addEventListener('click', ()=> {
-  matrixModal.classList.add('active');
-});
-closeMatrix.addEventListener('click', ()=> {
-  matrixModal.classList.remove('active');
-});
-matrixModal.addEventListener('click', (e) => {
-  if (e.target === matrixModal) matrixModal.classList.remove('active');
-});
+  <script src="script.js"></script>
+</body>
+</html>
