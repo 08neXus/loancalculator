@@ -17,11 +17,7 @@ const breakdownTbody = document.querySelector('#breakdown tbody');
 const toast = document.getElementById('toast');
 const summaryCard = document.getElementById('summaryCard');
 const principalVal = document.getElementById('principalVal');
-const totalInterestVal = document.getElementById('totalInterestVal');
 const monthlyVal = document.getElementById('monthlyVal');
-
-const totalAfterRow = document.getElementById('totalAfterRow');
-const totalAfterVal = document.getElementById('totalAfterVal');
 
 const matrixBtn = document.getElementById('matrixBtn');
 const matrixModal = document.getElementById('matrixModal');
@@ -66,12 +62,12 @@ function toPHP(n){
 }
 
 /* Build table row */
-function row(i,begBal,interestAmt,principalAmt,endBal){
+function row(i,begBal,interestAmt,paymentAmt,endBal){
   return `<tr>
     <td>${i}</td>
     <td>${toPHP(begBal)}</td>
     <td>${toPHP(interestAmt)}</td>
-    <td>${toPHP(principalAmt)}</td>
+    <td>${toPHP(paymentAmt)}</td>
     <td>${toPHP(endBal)}</td>
   </tr>`;
 }
@@ -122,38 +118,60 @@ calcBtn.addEventListener('click', () => {
 
   /* FULL PAYMENT OPTION — TERM = 0 */
   if (term === 0){
-    breakdownTbody.insertAdjacentHTML('beforeend',
-      row(1, principal, 0, principal, 0)
-    );
+  breakdownTbody.insertAdjacentHTML(
+    'beforeend',
+    row(1, principal, 0, principal, 0)
+  );
 
-    monthlyPayment = principal;
-    totalInterest = 0;
+  monthlyPayment = principal;
 
-    summaryCard.classList.remove('hidden');
-    totalAfterRow.classList.remove('hidden');
-    principalVal.textContent = toPHP(principal);
-    totalInterestVal.textContent = toPHP(0);
-    monthlyVal.textContent = toPHP(principal);
-    totalAfterVal.textContent = toPHP(principal);
+  summaryCard.classList.remove('hidden');
+  principalVal.textContent = toPHP(principal);
+  monthlyVal.textContent = toPHP(principal);
 
-    showToast('Calculation done');
-    return;
-  }
+  showToast('Calculation done');
+  return;
+}
 
   /* SIMPLE (ADD-ON) */
   if (interestType === 'simple'){
-    totalInterest = principal * r * term;
-    monthlyPayment = (principal + totalInterest) / term;
-    const monthlyPrincipal = principal / term;
-    const monthlyInterest = totalInterest / term;
+  totalInterest = principal * r * term;
+  monthlyPayment = (principal + totalInterest) / term;
 
-    for (let i=1;i<=term;i++){
-      const beginning = +(principal - monthlyPrincipal*(i-1));
-      const endBal = +(principal - monthlyPrincipal*i).toFixed(2);
-      breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, monthlyInterest, monthlyPrincipal, Math.max(endBal,0))
-      );
-    }
+  const monthlyPrincipal = principal / term;
+  const monthlyInterest = totalInterest / term;
+
+  let payments = Array(term).fill(monthlyPayment);
+
+  let remainingDown = downAmt;
+
+  for (let i = term - 1; i >= 0; i--) {
+    if (remainingDown <= 0) break;
+
+    const deduction = Math.min(payments[i], remainingDown);
+    payments[i] -= deduction;
+    remainingDown -= deduction;
+  }
+
+  for (let i = 1; i <= term; i++) {
+    const beginning =
+      +(principal - monthlyPrincipal * (i - 1));
+
+    const endBal =
+      +(principal - monthlyPrincipal * i).toFixed(2);
+
+    breakdownTbody.insertAdjacentHTML(
+      'beforeend',
+      row(
+        i,
+        beginning,
+        monthlyInterest,
+        payments[i - 1],
+        Math.max(endBal, 0)
+      )
+    );
+  }
+}
 
   /* AMORTIZED */
   } else if (interestType === 'amortized'){
@@ -164,7 +182,7 @@ calcBtn.addEventListener('click', () => {
       const principalPaid = +(monthlyPayment - interest);
       const endBal = +(remaining - principalPaid);
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, remaining, interest, principalPaid, Math.max(endBal,0))
+        row(i, remaining, interest, payments[i - 1], Math.max(endBal,0))
       );
       remaining = endBal;
       totalInterest += interest;
@@ -175,6 +193,18 @@ calcBtn.addEventListener('click', () => {
     const interestAmt = principal * r;
     const monthlyPrincipal = principal / term;
     monthlyPayment = monthlyPrincipal + interestAmt;
+    let payments = Array(term).fill(monthlyPayment);
+
+let remainingDown = downAmt;
+
+for (let i = term - 1; i >= 0; i--) {
+  if (remainingDown <= 0) break;
+
+  const deduction =
+    Math.min(payments[i], remainingDown);
+
+  payments[i] -= deduction;
+  remainingDown -= deduction;
     totalInterest = interestAmt * term;
     let balRem = principal;
 
@@ -182,7 +212,7 @@ calcBtn.addEventListener('click', () => {
       const beginning = balRem;
       balRem -= monthlyPrincipal;
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, interestAmt, monthlyPrincipal, Math.max(balRem,0))
+        row(i, beginning, interestAmt, payments[i - 1], Math.max(balRem,0))
       );
     }
 
@@ -190,6 +220,19 @@ calcBtn.addEventListener('click', () => {
   } else if (interestType === 'compound'){
     let bal = principal;
     monthlyPayment = principal / term;
+    let payments = Array(term).fill(monthlyPayment);
+
+let remainingDown = downAmt;
+
+for (let i = term - 1; i >= 0; i--) {
+  if (remainingDown <= 0) break;
+
+  const deduction =
+    Math.min(payments[i], remainingDown);
+
+  payments[i] -= deduction;
+  remainingDown -= deduction;
+}
 
     for (let i=1;i<=term;i++){
       const interest = +(bal * r);
@@ -197,7 +240,7 @@ calcBtn.addEventListener('click', () => {
       const endBal = +(bal + interest - principalPaid);
 
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, bal, interest, principalPaid, Math.max(endBal,0))
+        row(i, bal, interest, payments[i - 1], Math.max(endBal,0))
       );
 
       totalInterest += interest;
@@ -207,39 +250,18 @@ calcBtn.addEventListener('click', () => {
 
   /* SUMMARY OUTPUT */
   summaryCard.classList.remove('hidden');
-  totalAfterRow.classList.remove('hidden');
 
-  principalVal.textContent = toPHP(principal);
-  totalInterestVal.textContent = toPHP(totalInterest);
-  monthlyVal.textContent = toPHP(monthlyPayment);
+principalVal.textContent = toPHP(principal);
+monthlyVal.textContent = toPHP(monthlyPayment);
 
-  const totalAfter = principal + totalInterest;
-  totalAfterVal.textContent = toPHP(totalAfter);
-
-  showToast('Calculation done');
+showToast('Calculation done');
 });
 
 /* CLEAR */
-clearBtn.addEventListener('click', ()=>{
-  priceEl.value='';
-  downToggleEl.checked=false;
-  downPaymentEl.value='';
-  downPaymentEl.disabled=true;
+summaryCard.classList.add('hidden');
 
-  customToggleEl.checked=false;
-  customInterestEl.value='';
-  customInterestEl.disabled=true;
-
-  breakdownTbody.innerHTML='';
-  summaryCard.classList.add('hidden');
-  totalAfterRow.classList.add('hidden');
-
-  principalVal.textContent='—';
-  totalInterestVal.textContent='—';
-  monthlyVal.textContent='—';
-  totalAfterVal.textContent='—';
-
-  showToast('Cleared');
+principalVal.textContent = '—';
+monthlyVal.textContent = '—';
 });
 
 /* MATRIX MODAL */
