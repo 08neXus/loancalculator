@@ -176,6 +176,42 @@ calcBtn.addEventListener('click', () => {
   /* AMORTIZED */
   } else if (interestType === 'amortized'){
     monthlyPayment = r===0 ? principal/term : (principal*r)/(1-Math.pow(1+r,-term));
+    monthlyPayment = r===0
+  ? principal/term
+  : (principal*r)/(1-Math.pow(1+r,-term));
+
+let payments = Array(term).fill(monthlyPayment);
+
+let remainingDown = downAmt;
+
+for (let i = term - 1; i >= 0; i--) {
+  if (remainingDown <= 0) break;
+
+  const deduction = Math.min(payments[i], remainingDown);
+  payments[i] -= deduction;
+  remainingDown -= deduction;
+}
+
+let remaining = principal;
+for (let i=1; i<=term; i++){
+  const interest = +(remaining * r);
+  const principalPaid = +(monthlyPayment - interest);
+  const endBal = +(remaining - principalPaid);
+
+  breakdownTbody.insertAdjacentHTML(
+    'beforeend',
+    row(
+      i,
+      remaining,
+      interest,
+      payments[i - 1],
+      Math.max(endBal,0)
+    )
+  );
+
+  remaining = endBal;
+  totalInterest += interest;
+}
     let remaining = principal;
     for (let i=1;i<=term;i++){
       const interest = +(remaining * r);
