@@ -73,7 +73,25 @@ function row(i,begBal,interestAmt,principalAmt,endBal,payment){
     <td>${toPHP(payment)}</td>
   </tr>`;
 }
+function getAdjustedPayments(monthly, term, downPayment){
+  const payments = Array(term).fill(monthly);
 
+  let remaining = downPayment;
+
+  for (let i = term - 1; i >= 0; i--) {
+    if (remaining <= 0) break;
+
+    if (remaining >= payments[i]) {
+      remaining -= payments[i];
+      payments[i] = 0;
+    } else {
+      payments[i] -= remaining;
+      remaining = 0;
+    }
+  }
+
+  return payments;
+}
 /* Calculate */
 calcBtn.addEventListener('click', () => {
   let originalPrice = parseFloat(priceEl.value);
@@ -117,6 +135,7 @@ calcBtn.addEventListener('click', () => {
   breakdownTbody.innerHTML = '';
   let monthlyPayment = 0;
   let totalInterest = 0;
+  let adjustedPayments = [];
 
   /* FULL PAYMENT OPTION — TERM = 0 */
   if (term === 0){
@@ -138,6 +157,7 @@ calcBtn.addEventListener('click', () => {
   /* SIMPLE (ADD-ON) */
   if (interestType === 'simple'){
     totalInterest = principal * r * term;
+    adjustedPayments =getAdjustedPayments(monthlyPayment,term,downAmt);
     monthlyPayment = (principal + totalInterest) / term;
     const monthlyPrincipal = principal / term;
     const monthlyInterest = totalInterest / term;
@@ -146,21 +166,20 @@ calcBtn.addEventListener('click', () => {
       const beginning = +(principal - monthlyPrincipal*(i-1));
       const endBal = +(principal - monthlyPrincipal*i).toFixed(2);
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, monthlyInterest, monthlyPrincipal, Math.max(endBal,0))
-      );
+        row(i,beginning,monthlyInterest,monthlyPrincipal,Math.max(endBal,0),adjustedPayments[i-1]);
     }
 
   /* AMORTIZED */
   } else if (interestType === 'amortized'){
     monthlyPayment = r===0 ? principal/term : (principal*r)/(1-Math.pow(1+r,-term));
+    adjustedPayments =getAdjustedPayments(monthlyPayment,term,downAmt);
     let remaining = principal;
     for (let i=1;i<=term;i++){
       const interest = +(remaining * r);
       const principalPaid = +(monthlyPayment - interest);
       const endBal = +(remaining - principalPaid);
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, remaining, interest, principalPaid, Math.max(endBal,0))
-      );
+        row(i,remaining,interest,principalPaid,Math.max(endBal,0),adjustedPayments[i-1]);
       remaining = endBal;
       totalInterest += interest;
     }
@@ -170,6 +189,7 @@ calcBtn.addEventListener('click', () => {
     const interestAmt = principal * r;
     const monthlyPrincipal = principal / term;
     monthlyPayment = monthlyPrincipal + interestAmt;
+    adjustedPayments =getAdjustedPayments(monthlyPayment,term,downAmt);
     totalInterest = interestAmt * term;
     let balRem = principal;
 
@@ -177,14 +197,14 @@ calcBtn.addEventListener('click', () => {
       const beginning = balRem;
       balRem -= monthlyPrincipal;
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, beginning, interestAmt, monthlyPrincipal, Math.max(balRem,0))
-      );
+        row(i,beginning,interestAmt,monthlyPrincipal,Math.max(balRem,0),adjustedPayments[i-1]);
     }
 
   /* COMPOUND */
   } else if (interestType === 'compound'){
     let bal = principal;
     monthlyPayment = principal / term;
+    adjustedPayments =getAdjustedPayments(monthlyPayment,term,downAmt);
 
     for (let i=1;i<=term;i++){
       const interest = +(bal * r);
@@ -192,8 +212,7 @@ calcBtn.addEventListener('click', () => {
       const endBal = +(bal + interest - principalPaid);
 
       breakdownTbody.insertAdjacentHTML('beforeend',
-        row(i, bal, interest, principalPaid, Math.max(endBal,0))
-      );
+        row(i,bal,interest,principalPaid,Math.max(endBal,0),adjustedPayments[i-1]);
 
       totalInterest += interest;
       bal = endBal;
