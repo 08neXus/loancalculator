@@ -46,7 +46,10 @@ customToggleEl.addEventListener('change', () => {
 /* Toggle downpayment */
 downToggleEl.addEventListener('change', () => {
   downPaymentEl.disabled = !downToggleEl.checked;
-  if (!downToggleEl.checked) downPaymentEl.value = '';
+
+  if (!downToggleEl.checked) {
+    downPaymentEl.value = '';
+  }
 });
 
 /* Toast */
