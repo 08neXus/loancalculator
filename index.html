@@ -4,153 +4,74 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Installment Calculator</title>
-
-  <!-- Roboto + Material Symbols -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <header class="header">
-      <img class="brand-icon" src="icon.png" alt="app icon">
-      <div>
-        <h1 class="title">Installment Calculator</h1>
-        <p class="subtitle">nexus</p>
-      </div>
+      <h1 class="title">Installment Calculator</h1>
     </header>
 
     <section class="card">
       <div class="row">
         <label class="label">Item Price (₱)</label>
-        <input id="price" type="number" inputmode="decimal" placeholder="Enter item price" />
+        <input id="price" type="number" placeholder="Enter item price" />
       </div>
 
-      <!-- DOWNPAYMENT OPTIONAL -->
       <div class="row">
-        <label class="label">Use downpayment (optional)</label>
+        <label class="label">Use downpayment</label>
         <div class="row two-col">
-          <div class="col">
-            <input type="checkbox" id="downToggle" />
-          </div>
-          <div class="col">
-            <input id="downPayment" type="number" placeholder="Enter downpayment amount" disabled />
-          </div>
+          <div class="col"><input type="checkbox" id="downToggle" /></div>
+          <div class="col"><input id="downPayment" type="number" placeholder="Downpayment amount" disabled /></div>
         </div>
       </div>
 
-      <!-- Payment Term + Interest Type -->
       <div class="row two-col">
         <div class="col">
           <label class="label">Payment Term</label>
           <select id="term" onchange="updateAutoRate()">
-            <option value="0" selected>0 months (full payment)</option>
+            <option value="0">0 months (full)</option>
             <option value="3">3 months</option>
             <option value="6">6 months</option>
-            <option value="9">9 months</option>
             <option value="12">12 months</option>
-            <option value="24">24 months</option>
           </select>
         </div>
-
         <div class="col">
           <label class="label">Interest Type</label>
           <select id="interestType">
+            <option value="simple">Simple (Add-On)</option>
             <option value="amortized">Amortized</option>
-            <option value="simple" selected>Simple (Monthly Add-On)</option>
-            <option value="fixed">Fixed</option>
-            <option value="compound">Compound</option>
           </select>
-        </div>
-      </div>
-
-      <!-- Custom interest -->
-      <div class="row">
-        <label class="label">Use custom interest rate</label>
-        <div class="row two-col">
-          <div class="col">
-            <input type="checkbox" id="customToggle" />
-          </div>
-          <div class="col">
-            <input id="customInterest" type="number" placeholder="Enter custom interest %" disabled />
-          </div>
         </div>
       </div>
 
       <div class="row btn-row">
-        <button id="calcBtn" class="btn primary">
-          <span class="material-symbols-outlined">calculate</span> Calculate
-        </button>
-        <button id="clearBtn" class="btn neutral">
-          <span class="material-symbols-outlined">refresh</span> Clear
-        </button>
+        <button id="calcBtn" class="btn primary">Calculate</button>
+        <button id="clearBtn" class="btn neutral">Clear</button>
       </div>
 
-      <!-- MATRIX BUTTON -->
-      <div class="matrix-btn-row">
-        <button id="matrixBtn" class="btn neutral">
-          <span class="material-symbols-outlined">table_chart</span> View Add-On Matrix
-        </button>
-      </div>
-
-      <!-- POPUP MODAL -->
-      <div id="matrixModal" class="popup-overlay" aria-hidden="true">
-        <div class="popup" role="dialog" aria-modal="true">
-          <h3>Monthly Add-On Interest Matrix</h3>
-          <table class="matrix-table">
-            <thead>
-              <tr><th>Term</th><th>Rate</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>0</td><td>0%</td></tr>
-              <tr><td>3</td><td>1.5%</td></tr>
-              <tr><td>6</td><td>2%</td></tr>
-              <tr><td>9</td><td>2.5%</td></tr>
-              <tr><td>12</td><td>3%</td></tr>
-              <tr><td>24</td><td>4%</td></tr>
-            </tbody>
-          </table>
-          <button id="closeMatrix" class="btn primary" style="margin-top:16px">Close</button>
+      <div class="row summary-row hidden" id="summaryCard">
+        <div class="summary-item">
+          <div class="s-label">Principal to Finance</div>
+          <div class="s-value" id="principalVal">—</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-label">Monthly Payment</div>
+          <div class="s-value" id="monthlyVal">—</div>
         </div>
       </div>
 
-      <!-- SUMMARY -->
-      <div class="row summary-row hidden" id="summaryCard">
-  <div class="summary-item">
-    <div class="s-label">Principal</div>
-    <div class="s-value" id="principalVal">—</div>
-  </div>
-  <div class="summary-item">
-    <div class="s-label">Monthly</div>
-    <div class="s-value" id="monthlyVal">—</div>
-  </div>
-</div>
-
-      <!-- BREAKDOWN -->
       <div class="table-wrapper">
         <table id="breakdown" class="table">
-          <thead>
-            <tr>
-              <th>Month</th>
-              <th>Beg Bal</th>
-              <th>Interest</th>
-              <th>Payment</th>
-              <th>End Bal</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Month</th><th>Beg Bal</th><th>Interest</th><th>Principal</th><th>End Bal</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
-
-    <div id="toast" class="toast">Cleared</div>
-
-    <footer class="footer">
-      © Created by melvinpangilinan
-    </footer>
+    <div id="toast" class="toast">Action Complete</div>
   </main>
-
   <script src="script.js"></script>
 </body>
 </html>
