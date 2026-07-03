@@ -295,7 +295,8 @@ function calculate(){
     let dp = useDP ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
 
     if(price <= 0){
-        alert("Please enter item price.");
+        document.getElementById('result').innerHTML =
+        "<div class='card'><h3>Please enter item price</h3></div>";
         return;
     }
 
@@ -304,20 +305,20 @@ function calculate(){
 
     if(months === 0){
         document.getElementById('result').innerHTML = `
-            <div class="card">
-                <h3>Cash Price</h3>
-                <p>${peso(principal)}</p>
-            </div>`;
+        <div class="card">
+            <h3>Cash Price</h3>
+            <p>${peso(principal)}</p>
+        </div>`;
         return;
     }
 
     let schedule = [];
     let balance = principal;
+
     let totalInterest = 0;
     let totalPrincipal = 0;
 
     let monthlyPayment = 0;
-
     let r = (rate/100)/12;
 
     if(type === "amortized"){
@@ -375,7 +376,7 @@ function calculate(){
         totalPrincipal += principalPay;
     }
 
-    // 💰 DOWNPAYMENT DISTRIBUTED TO LAST MONTHS
+    // 💰 Downpayment applied to last months
     let remainingDP = dp;
 
     for(let i=schedule.length-1;i>=0;i--){
@@ -385,31 +386,25 @@ function calculate(){
 
         if(remainingDP >= row.payment){
             remainingDP -= row.payment;
-            totalPrincipal -= row.principal;
-            totalInterest -= row.interest;
-
             row.payment = 0;
             row.principal = 0;
             row.interest = 0;
         } else {
-            let reduceRatio = remainingDP / row.payment;
+            let ratio = remainingDP / row.payment;
 
             row.payment -= remainingDP;
-            row.principal -= row.principal * reduceRatio;
-            row.interest -= row.interest * reduceRatio;
-
-            totalPrincipal -= row.principal * reduceRatio;
-            totalInterest -= row.interest * reduceRatio;
+            row.principal -= row.principal * ratio;
+            row.interest -= row.interest * ratio;
 
             remainingDP = 0;
         }
     }
 
-    // 📱 CARD OUTPUT UI
+    // 📊 SUMMARY + TABLE OUTPUT
     let html = `
     <div class="card-summary">
         <div class="card">
-            <h3>Total Principal Paid</h3>
+            <h3>Total Principal</h3>
             <p>${peso(totalPrincipal)}</p>
         </div>
         <div class="card">
@@ -417,22 +412,35 @@ function calculate(){
             <p>${peso(totalInterest)}</p>
         </div>
         <div class="card">
-            <h3>Total Downpayment</h3>
+            <h3>Downpayment</h3>
             <p>${peso(dp)}</p>
         </div>
-    </div>`;
+    </div>
 
-    schedule.forEach(r=>{
+    <div class="table-wrapper">
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Beginning</th>
+            <th>Payment</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Ending</th>
+        </tr>`;
+
+    schedule.forEach(row=>{
         html += `
-        <div class="month-card">
-            <h3>Month ${r.month}</h3>
-            <p><b>Beginning:</b> ${peso(r.beginning)}</p>
-            <p><b>Payment:</b> ${peso(r.payment)}</p>
-            <p><b>Principal:</b> ${peso(r.principal)}</p>
-            <p><b>Interest:</b> ${peso(r.interest)}</p>
-            <p><b>Ending:</b> ${peso(r.ending)}</p>
-        </div>`;
+        <tr>
+            <td>${row.month}</td>
+            <td>${peso(Math.max(0,row.beginning))}</td>
+            <td>${peso(Math.max(0,row.payment))}</td>
+            <td>${peso(Math.max(0,row.principal))}</td>
+            <td>${peso(Math.max(0,row.interest))}</td>
+            <td>${peso(Math.max(0,row.ending))}</td>
+        </tr>`;
     });
+
+    html += `</table></div>`;
 
     document.getElementById('result').innerHTML = html;
 }
