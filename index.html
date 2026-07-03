@@ -177,6 +177,10 @@ tr:hover{
     accent-color:#4285f4;
     flex-shrink:0;
 }
+#downpaymentDiv{
+    display:none;
+    grid-column:1 / -1;
+}
 </style>
 </head>
 <body>
@@ -193,14 +197,14 @@ tr:hover{
 
     <div class="input-group">
         <label class="checkbox-label">
-            <input type="checkbox" id="useDP">
-            Downpayment
-        </label>
+        <input type="checkbox" id="useDP">
+        Downpayment
+    </label>
     </div>
 
     <div class="input-group" id="downpaymentDiv">
         <label>Downpayment Amount</label>
-        <input type="number" id="downpayment" placeholder="Enter downpayment">
+        <input type="number" id="downpayment" placeholder="Enter downpayment amount">
     </div>
 
     <div class="input-group">
