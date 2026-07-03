@@ -22,9 +22,11 @@
         .btn-clear:hover { background: #e8eaed; }
 
         .table-wrapper { margin-top: 30px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; white-space: nowrap; }
         th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
         th { background: #f8f9fa; }
+        .dp-text { color: #0f9d58; }
+        .net-text { font-weight: bold; }
         .card-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
         .card { background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #eee; text-align: center; }
     </style>
@@ -78,16 +80,11 @@ function peso(num) {
 }
 
 function clearForm() {
-    // Reset all text/number inputs to empty
     document.getElementById('price').value = '';
     document.getElementById('downpayment').value = '';
     document.getElementById('rate').value = '';
-    
-    // Reset dropdowns to their default states
     document.getElementById('months').value = '12';
     document.getElementById('interestType').value = 'simple';
-    
-    // Wipe the result HTML
     document.getElementById('result').innerHTML = '';
 }
 
@@ -98,27 +95,26 @@ function calculate() {
     const annualRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
     const type = document.getElementById('interestType').value;
 
-    // Validate Item Price
     if (price <= 0) {
         document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Please enter a valid item price.</p>";
         return;
     }
-
-    const loanPrincipal = price - dp;
     
-    // Validate Downpayment against Item Price
-    if (loanPrincipal <= 0) {
-        document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Downpayment must be less than the price.</p>";
+    if (dp >= price) {
+        document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Downpayment must be less than the Item Price.</p>";
         return;
     }
+
+    // Notice: Interest is now calculated on the FULL price, not price - dp.
+    const loanPrincipal = price; 
 
     let schedule = [];
     let monthlyPayment = 0;
     let totalInterest = 0;
 
+    // Generate Standard Schedule (Based on Full Price)
     if (type === "amortized") {
         if (annualRate === 0) {
-            // Fallback for 0% interest to prevent NaN
             monthlyPayment = loanPrincipal / months;
             let balance = loanPrincipal;
             for (let i = 1; i <= months; i++) {
@@ -152,17 +148,54 @@ function calculate() {
         }
     }
 
-    // Updated Total Paid to include Downpayment (Price + Total Interest)
+    // Apply the Downpayment to the final months
+    let remainingDP = dp;
+    for (let i = months - 1; i >= 0; i--) {
+        if (remainingDP <= 0) {
+            schedule[i].dpCredit = 0;
+            schedule[i].actualPayment = schedule[i].payment;
+            continue;
+        }
+        
+        if (remainingDP >= schedule[i].payment) {
+            schedule[i].dpCredit = schedule[i].payment;
+            schedule[i].actualPayment = 0;
+            remainingDP -= schedule[i].payment;
+        } else {
+            schedule[i].dpCredit = remainingDP;
+            schedule[i].actualPayment = schedule[i].payment - remainingDP;
+            remainingDP = 0;
+        }
+    }
+
     let html = `
         <div class="card-summary">
-            <div class="card"><strong>Monthly:</strong><br>${peso(monthlyPayment)}</div>
+            <div class="card"><strong>Standard Monthly:</strong><br>${peso(monthlyPayment)}</div>
             <div class="card"><strong>Total Interest:</strong><br>${peso(totalInterest)}</div>
-            <div class="card"><strong>Total Paid:</strong><br>${peso(price + totalInterest)}</div>
+            <div class="card"><strong>Total Cost:</strong><br>${peso(price + totalInterest)}</div>
         </div>
         <div class="table-wrapper">
         <table>
-            <tr><th>Mo</th><th>Beginning</th><th>Principal</th><th>Interest</th><th>Ending</th></tr>
-            ${schedule.map(r => `<tr><td>${r.month}</td><td>${peso(r.start)}</td><td>${peso(r.principal)}</td><td>${peso(r.interest)}</td><td>${peso(Math.max(0, r.end))}</td></tr>`).join('')}
+            <tr>
+                <th>Mo</th>
+                <th>Beginning</th>
+                <th>Principal</th>
+                <th>Interest</th>
+                <th>Reg. PMT</th>
+                <th>DP Applied</th>
+                <th>Net Payment</th>
+                <th>Ending</th>
+            </tr>
+            ${schedule.map(r => `<tr>
+                <td>${r.month}</td>
+                <td>${peso(r.start)}</td>
+                <td>${peso(r.principal)}</td>
+                <td>${peso(r.interest)}</td>
+                <td>${peso(r.payment)}</td>
+                <td class="dp-text">-${peso(r.dpCredit)}</td>
+                <td class="net-text">${peso(r.actualPayment)}</td>
+                <td>${peso(Math.max(0, r.end))}</td>
+            </tr>`).join('')}
         </table>
         </div>`;
     document.getElementById('result').innerHTML = html;
