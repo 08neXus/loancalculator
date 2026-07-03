@@ -179,7 +179,7 @@ tr:hover{
     flex-shrink:0;
 }
 #downpaymentDiv {
-    display: none;
+    display: block;
 }
 </style>
 </head>
@@ -242,6 +242,21 @@ tr:hover{
 </div>
 
 <script>
+function toggleDP() {
+    const dpDiv = document.getElementById("downpaymentDiv");
+    const useDP = document.getElementById("useDP");
+    const dpInput = document.getElementById("downpayment");
+
+    if (useDP.checked) {
+        dpDiv.style.display = "block";
+        dpInput.disabled = false;
+    } else {
+        dpDiv.style.display = "block";   // KEEP VISIBLE
+        dpInput.disabled = true;         // JUST DISABLE
+        dpInput.value = "";
+    }
+}
+
 function peso(num){
     return "₱" + num.toLocaleString(undefined,{
         minimumFractionDigits:2,
@@ -252,142 +267,55 @@ function peso(num){
 function calculate(){
 
     let price = parseFloat(document.getElementById('price').value) || 0;
-    let months = parseInt(document.getElementById('months').value);
+    let months = parseInt(document.getElementById('months').value) || 0;
     let rate = parseFloat(document.getElementById('rate').value) || 0;
     let type = document.getElementById('interestType').value;
-    let dp = document.getElementById('useDP').checked
-        ? parseFloat(document.getElementById('downpayment').value) || 0
-        : 0;
 
-    if(price<=0){
+    let useDP = document.getElementById('useDP').checked;
+    let dp = useDP ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
+
+    if(price <= 0){
         alert("Please enter item price.");
         return;
     }
 
-    if(months===0){
-        document.getElementById('result').innerHTML=
-            "<h3>Cash Price: "+peso(price-dp)+"</h3>";
+    let principal = price - dp;
+    if(principal < 0) principal = 0;
+
+    let schedule = [];
+
+    if(months === 0){
+        document.getElementById('result').innerHTML =
+            "<h3>Cash Price: " + peso(principal) + "</h3>";
         return;
     }
 
-    let balance = price;
-    let monthlyPayment = 0;
-    let schedule = [];
+    let balance = principal;
 
-    if(type==="amortized"){
+    if(type === "amortized"){
         let r = (rate/100)/12;
 
-        if(r===0){
-            monthlyPayment = balance/months;
-        }else{
-            monthlyPayment =
-                balance*r*Math.pow(1+r,months)/
-                (Math.pow(1+r,months)-1);
-        }
+        let monthlyPayment =
+            r === 0 ? balance/months :
+            (balance*r*Math.pow(1+r,months)) /
+            (Math.pow(1+r,months)-1);
 
         for(let i=1;i<=months;i++){
             let beginning = balance;
-            let interest = beginning*r;
-            let principal = monthlyPayment-interest;
-            let ending = beginning-principal;
+            let interest = beginning * r;
+            let principalPay = monthlyPayment - interest;
+            let ending = beginning - principalPay;
 
             schedule.push({
                 month:i,
                 beginning,
                 payment:monthlyPayment,
-                principal,
+                principal:principalPay,
                 interest,
                 ending
             });
 
             balance = ending;
-        }
-    }
-
-    else if(type==="simple"){
-        let totalInterest = price*(rate/100)*months;
-        let total = price+totalInterest;
-        monthlyPayment = total/months;
-
-        for(let i=1;i<=months;i++){
-            let beginning = balance;
-            let interest = price*(rate/100);
-            let principal = monthlyPayment-interest;
-            let ending = beginning-principal;
-
-            schedule.push({
-                month:i,
-                beginning,
-                payment:monthlyPayment,
-                principal,
-                interest,
-                ending
-            });
-
-            balance = ending;
-        }
-    }
-
-    else if(type==="fixed"){
-        let totalInterest = price*(rate/100);
-        let total = price+totalInterest;
-        monthlyPayment = total/months;
-
-        for(let i=1;i<=months;i++){
-            let beginning = balance;
-            let interest = totalInterest/months;
-            let principal = monthlyPayment-interest;
-            let ending = beginning-principal;
-
-            schedule.push({
-                month:i,
-                beginning,
-                payment:monthlyPayment,
-                principal,
-                interest,
-                ending
-            });
-
-            balance = ending;
-        }
-    }
-
-    else if(type==="compound"){
-        let r = rate/100;
-        let total = price*Math.pow((1+r),months);
-        monthlyPayment = total/months;
-
-        for(let i=1;i<=months;i++){
-            let beginning = balance;
-            let interest = beginning*r;
-            let principal = monthlyPayment-interest;
-            let ending = beginning-principal;
-
-            schedule.push({
-                month:i,
-                beginning,
-                payment:monthlyPayment,
-                principal,
-                interest,
-                ending
-            });
-
-            balance = ending;
-        }
-    }
-
-    // Deduct downpayment from last month(s)
-    let remainingDP = dp;
-
-    for(let i=schedule.length-1;i>=0;i--){
-        if(remainingDP<=0) break;
-
-        if(remainingDP >= schedule[i].payment){
-            remainingDP -= schedule[i].payment;
-            schedule[i].payment = 0;
-        }else{
-            schedule[i].payment -= remainingDP;
-            remainingDP = 0;
         }
     }
 
@@ -405,8 +333,7 @@ function calculate(){
 
     schedule.forEach(row=>{
         html += `
-        </table>
-        </div>`;
+        <tr>
             <td>${row.month}</td>
             <td>${peso(Math.max(0,row.beginning))}</td>
             <td>${peso(Math.max(0,row.payment))}</td>
@@ -416,85 +343,9 @@ function calculate(){
         </tr>`;
     });
 
-    html += "</table>";
+    html += `</table></div>`;
 
     document.getElementById('result').innerHTML = html;
-}
-function toggleDP() {
-    const dp = document.getElementById("downpaymentDiv");
-    const check = document.getElementById("useDP");
-    if (check.checked) {
-        dp.style.display = "block";
-    } else {
-        dp.style.display = "none";
-    }
-}
-</script>
-<script>
-function toggleDP() {
-    const dpDiv = document.getElementById("downpaymentDiv");
-    const useDP = document.getElementById("useDP");
-
-    if (useDP.checked) {
-        dpDiv.style.display = "block";
-    } else {
-        dpDiv.style.display = "none";
-        document.getElementById("downpayment").value = "";
-    }
-}
-
-function calculate() {
-    let price = parseFloat(document.getElementById("price").value) || 0;
-    let months = parseInt(document.getElementById("months").value) || 0;
-    let rate = parseFloat(document.getElementById("rate").value) || 0;
-    let type = document.getElementById("interestType").value;
-
-    let useDP = document.getElementById("useDP").checked;
-    let dp = useDP ? (parseFloat(document.getElementById("downpayment").value) || 0) : 0;
-
-    // deduct downpayment FIRST
-    let principal = price - dp;
-    if (principal < 0) principal = 0;
-
-    let result = 0;
-
-    // CASH
-    if (months === 0) {
-        result = principal;
-    }
-
-    // SIMPLE / ADD-ON
-    else if (type === "simple") {
-        let interest = principal * (rate / 100) * (months / 12);
-        result = principal + interest;
-    }
-
-    // FIXED
-    else if (type === "fixed") {
-        let interest = principal * (rate / 100);
-        result = principal + interest;
-    }
-
-    // COMPOUND
-    else if (type === "compound") {
-        result = principal * Math.pow(1 + (rate / 100) / 12, months);
-    }
-
-    // AMORTIZED (basic monthly payment simulation)
-    else if (type === "amortized") {
-        let monthlyRate = (rate / 100) / 12;
-
-        if (monthlyRate === 0 || months === 0) {
-            result = principal;
-        } else {
-            let monthly = (principal * monthlyRate) /
-                (1 - Math.pow(1 + monthlyRate, -months));
-
-            result = monthly * months;
-        }
-    }
-
-    alert("Total Payable: ₱" + result.toFixed(2));
 }
 </script>
 </body>
