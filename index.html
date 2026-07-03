@@ -165,10 +165,11 @@ tr:hover{
 .checkbox-label{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:10px;
     cursor:pointer;
-    font-size:16px;
+    font-size:13px;
     font-weight:500;
+    color:#5f6368;
 }
 .checkbox-label input[type="checkbox"]{
     width:22px;
@@ -197,8 +198,10 @@ tr:hover{
     </div>
 
     <div class="input-group">
-        <label class="checkbox-label">
-        <input type="checkbox" id="useDP">
+    <label class="checkbox-label">
+        <input type="checkbox"
+               id="useDP"
+               onchange="toggleDP()">
         Downpayment
     </label>
     </div>
@@ -419,16 +422,6 @@ function calculate(){
 
     document.getElementById('result').innerHTML = html;
 }
-    document.getElementById("useDP").addEventListener("change", function () {
-    const dp = document.getElementById("downpaymentDiv");
-    if (this.checked) {
-        dp.style.display = "flex";
-        dp.style.flexDirection = "column";
-    } else {
-        dp.style.display = "none";
-    }
-});
-
 </script>
 
 </body>
