@@ -6,80 +6,160 @@
 <title>Installment Calculator</title>
 
 <style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f4f4f4;
+*{
+    box-sizing:border-box;
     margin:0;
-    padding:20px;
+    padding:0;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",
+    "Segoe UI",Roboto,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        linear-gradient(135deg,#e9f0ff,#f8f9ff,#ffffff);
+    padding:30px 15px;
+    color:#1f1f1f;
 }
 
 .container{
-    max-width:900px;
+    max-width:1000px;
     margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
+    backdrop-filter:blur(30px);
+    -webkit-backdrop-filter:blur(30px);
+    background:rgba(255,255,255,0.6);
+    border:1px solid rgba(255,255,255,0.5);
+    border-radius:32px;
+    padding:30px;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.08),
+        inset 0 1px 1px rgba(255,255,255,0.8);
 }
 
 h2{
     text-align:center;
+    font-weight:700;
+    font-size:28px;
+    margin-bottom:30px;
+    color:#202124;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
 }
 
 .input-group{
-    margin-bottom:15px;
+    display:flex;
+    flex-direction:column;
 }
 
 label{
-    display:block;
-    margin-bottom:5px;
+    margin-bottom:8px;
+    font-size:14px;
+    font-weight:500;
+    color:#5f6368;
 }
 
-input,select,button{
-    width:100%;
-    padding:10px;
-    box-sizing:border-box;
-    border:1px solid #ccc;
-    border-radius:5px;
+input,
+select{
+    height:56px;
+    border:1px solid rgba(0,0,0,0.1);
+    border-radius:18px;
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    padding:0 18px;
+    font-size:16px;
+    transition:all .25s;
+    outline:none;
+}
+
+input:focus,
+select:focus{
+    border:2px solid #4285f4;
+    box-shadow:0 0 0 4px rgba(66,133,244,0.15);
 }
 
 button{
-    background:#007bff;
-    color:#fff;
+    width:100%;
+    height:56px;
     border:none;
+    border-radius:18px;
+    margin-top:25px;
+    background:#4285f4;
+    color:#fff;
+    font-size:17px;
+    font-weight:600;
     cursor:pointer;
-    margin-top:10px;
+    transition:.25s;
 }
 
 button:hover{
-    background:#0056b3;
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(66,133,244,0.35);
+}
+
+#result{
+    margin-top:30px;
+}
+
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    border-radius:24px;
+    background:rgba(255,255,255,0.65);
+    backdrop-filter:blur(30px);
+    -webkit-backdrop-filter:blur(30px);
+    border:1px solid rgba(255,255,255,0.6);
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.08);
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:20px;
-    font-size:14px;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
+    min-width:850px;
 }
 
 th{
-    background:#007bff;
-    color:white;
+    background:rgba(66,133,244,0.12);
+    color:#1f1f1f;
+    font-weight:600;
+    padding:18px;
+    white-space:nowrap;
+}
+
+td{
+    padding:16px;
+    border-top:1px solid rgba(0,0,0,0.05);
+    text-align:center;
+    white-space:nowrap;
+}
+
+tr:hover{
+    background:rgba(66,133,244,0.05);
 }
 
 #downpaymentDiv{
     display:none;
 }
 
-@media(max-width:768px){
+@media (max-width:768px){
+
+    .container{
+        padding:20px;
+        border-radius:24px;
+    }
+
+    h2{
+        font-size:24px;
+    }
+
     table{
-        font-size:12px;
+        min-width:700px;
+        font-size:13px;
     }
 }
 </style>
@@ -88,7 +168,9 @@ th{
 
 <div class="container">
     <h2>Installment Calculator</h2>
-
+    
+    <div class="form-grid">
+        
     <div class="input-group">
         <label>Item Price</label>
         <input type="number" id="price" placeholder="Enter item price">
@@ -132,7 +214,7 @@ th{
         <label>Interest Rate (%)</label>
         <input type="number" id="rate" placeholder="Enter interest rate">
     </div>
-
+    </div
     <button onclick="calculate()">Calculate</button>
 
     <div id="result"></div>
@@ -294,6 +376,7 @@ function calculate(){
     }
 
     let html = `
+    <div class="table-wrapper">
     <table>
         <tr>
             <th>Month</th>
@@ -306,7 +389,8 @@ function calculate(){
 
     schedule.forEach(row=>{
         html += `
-        <tr>
+        </table>
+        </div>`;
             <td>${row.month}</td>
             <td>${peso(Math.max(0,row.beginning))}</td>
             <td>${peso(Math.max(0,row.payment))}</td>
