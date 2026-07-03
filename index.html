@@ -241,17 +241,6 @@ tr:hover{
 </div>
 
 <script>
-document.getElementById("useDP").addEventListener("change", function () {
-    const dp = document.getElementById("downpaymentDiv");
-
-    if (this.checked) {
-        dp.style.display = "flex";
-        dp.style.flexDirection = "column";
-    } else {
-        dp.style.display = "none";
-    }
-});
-
 function peso(num){
     return "₱" + num.toLocaleString(undefined,{
         minimumFractionDigits:2,
@@ -430,6 +419,16 @@ function calculate(){
 
     document.getElementById('result').innerHTML = html;
 }
+    document.getElementById("useDP").addEventListener("change", function () {
+    const dp = document.getElementById("downpaymentDiv");
+    if (this.checked) {
+        dp.style.display = "flex";
+        dp.style.flexDirection = "column";
+    } else {
+        dp.style.display = "none";
+    }
+});
+
 </script>
 
 </body>
