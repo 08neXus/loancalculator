@@ -242,8 +242,14 @@ tr:hover{
 
 <script>
 document.getElementById("useDP").addEventListener("change", function () {
-    document.getElementById("downpaymentDiv").style.display =
-        this.checked ? "block" : "none";
+    const dp = document.getElementById("downpaymentDiv");
+
+    if (this.checked) {
+        dp.style.display = "flex";
+        dp.style.flexDirection = "column";
+    } else {
+        dp.style.display = "none";
+    }
 });
 
 function peso(num){
