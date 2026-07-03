@@ -34,27 +34,17 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.05);
         }
 
-        /* Header */
         .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
         .header-icon { width: 40px; height: 40px; background: var(--bg-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); font-size: 18px; border: 1px solid var(--border-color); }
         .header-title h1 { font-size: 20px; font-weight: 700; margin: 0; }
         .header-title p { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-        /* Form Elements */
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 8px; }
         
         .input-row { display: flex; align-items: center; gap: 12px; }
-        .checkbox-wrapper { display: flex; align-items: center; }
-        
         input[type="checkbox"] { width: 24px; height: 24px; border-radius: 6px; accent-color: var(--primary); cursor: pointer; }
-        
-        input[type="number"], select {
-            width: 100%; height: 48px; border-radius: var(--radius-md); font-size: 15px; padding: 0 16px; outline: none; transition: 0.2s;
-        }
-        input[type="number"] { border: 1px solid var(--border-color); background-color: var(--input-bg); }
-        input[type="number"]:focus { border-color: var(--primary); }
-        input[type="number"]:disabled { background-color: var(--bg-color); opacity: 0.6; cursor: not-allowed; }
+        input[type="number"], select { width: 100%; height: 48px; border-radius: var(--radius-md); font-size: 15px; padding: 0 16px; outline: none; transition: 0.2s; border: 1px solid var(--border-color); background-color: var(--input-bg); }
         
         .interest-inline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .interest-inline label { margin-bottom: 0; white-space: nowrap; }
@@ -64,42 +54,34 @@
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-        /* Buttons */
         .btn-row { display: flex; gap: 12px; margin-top: 24px; }
         button { height: 52px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-calc { flex: 1.2; background-color: var(--primary); color: white; }
         .btn-calc:hover { background-color: var(--primary-hover); }
         .btn-clear { flex: 0.8; background-color: var(--btn-gray); color: var(--text-main); }
         .btn-clear:hover { background-color: var(--btn-gray-hover); }
-        .btn-matrix { width: 100%; background-color: var(--btn-gray); color: var(--text-main); margin-top: 16px; }
+        .btn-matrix { width: 100%; background-color: var(--btn-gray); color: var(--text-main); margin-top: 24px; }
         .btn-matrix:hover { background-color: var(--btn-gray-hover); }
 
-        /* Results Card */
         .results-container { margin-top: 24px; display: none; }
-        .results-card { background-color: #fcfcfd; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; text-align: center; margin-bottom: 12px; }
+        .results-card { background-color: #fcfcfd; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
         .results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
         .result-item span { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
         .result-item strong { font-size: 16px; color: var(--text-main); }
         .total-payable span { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
         .total-payable strong { font-size: 24px; color: var(--text-main); font-weight: 700; }
 
-        /* Table */
         .table-wrapper { margin-top: 16px; overflow-x: auto; display: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); }
         th { background: var(--select-bg); font-weight: 600; color: var(--text-muted); }
-        tr:last-child td { border-bottom: none; }
-        .dp-text { color: #34c759; }
-        .net-text { font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <div class="header-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16.01" y2="14"></line><line x1="16" y1="18" x2="16.01" y2="18"></line><line x1="12" y1="14" x2="12.01" y2="14"></line><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="8" y1="18" x2="8.01" y2="18"></line></svg>
-        </div>
+        <div class="header-icon">Σ</div>
         <div class="header-title">
             <h1>Installment Calculator</h1>
             <p>nexus</p>
@@ -114,9 +96,7 @@
     <div class="form-group">
         <label class="form-label">Use downpayment (optional)</label>
         <div class="input-row">
-            <div class="checkbox-wrapper">
-                <input type="checkbox" id="useDp" onchange="toggleInput('useDp', 'downpayment')">
-            </div>
+            <input type="checkbox" id="useDp" onchange="document.getElementById('downpayment').disabled = !this.checked;">
             <input type="number" id="downpayment" placeholder="Enter downpayment amount" disabled>
         </div>
     </div>
@@ -147,58 +127,28 @@
     </div>
 
     <div class="btn-row">
-        <button type="button" class="btn-calc" onclick="calculate()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
-            Calculate
-        </button>
-        <button type="button" class="btn-clear" onclick="clearForm()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
-            Clear
-        </button>
+        <button type="button" class="btn-calc" onclick="calculate()">Calculate</button>
+        <button type="button" class="btn-clear" onclick="clearForm()">Clear</button>
     </div>
-
-    <button type="button" class="btn-matrix" onclick="toggleMatrix()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-        View Add-On Matrix
-    </button>
 
     <div id="resultsArea" class="results-container">
         <div class="results-card">
             <div class="results-grid">
-                <div class="result-item">
-                    <span>Principal</span>
-                    <strong id="resPrincipal">-</strong>
-                </div>
-                <div class="result-item">
-                    <span>Monthly Add-on</span>
-                    <strong id="resAddOn">-</strong>
-                </div>
-                <div class="result-item">
-                    <span>Monthly</span>
-                    <strong id="resMonthly">-</strong>
-                </div>
+                <div class="result-item"><span>Principal</span><strong id="resPrincipal">-</strong></div>
+                <div class="result-item"><span>Monthly Add-on</span><strong id="resAddOn">-</strong></div>
+                <div class="result-item"><span>Monthly</span><strong id="resMonthly">-</strong></div>
             </div>
-            <div class="total-payable">
-                <span>Total Amount Payable</span>
-                <strong id="resTotal">-</strong>
-            </div>
+            <div class="total-payable"><span>Total Amount Payable</span><strong id="resTotal">-</strong></div>
         </div>
     </div>
+
+    <button type="button" class="btn-matrix" id="btnMatrix" onclick="toggleMatrix()" style="display:none;">View Add-On Matrix</button>
 
     <div id="matrixArea" class="table-wrapper"></div>
 </div>
 
 <script>
-function peso(num) {
-    return "₱" + num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-}
-
-function toggleInput(checkboxId, inputId) {
-    const cb = document.getElementById(checkboxId);
-    const input = document.getElementById(inputId);
-    input.disabled = !cb.checked;
-    if (!cb.checked) input.value = '';
-}
+function peso(num) { return "₱" + num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
 function clearForm() {
     document.getElementById('price').value = '';
@@ -206,80 +156,40 @@ function clearForm() {
     document.getElementById('downpayment').value = '';
     document.getElementById('downpayment').disabled = true;
     document.getElementById('rate').value = '';
-    document.getElementById('months').value = '12';
-    document.getElementById('interestType').value = 'simple';
     document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('btnMatrix').style.display = 'none';
     document.getElementById('matrixArea').style.display = 'none';
-    document.getElementById('matrixArea').innerHTML = '';
 }
 
 function toggleMatrix() {
     const matrix = document.getElementById('matrixArea');
-    if (matrix.innerHTML !== "") {
-        matrix.style.display = matrix.style.display === 'none' ? 'block' : 'none';
-    } else {
-        alert("Please calculate first to view the matrix.");
-    }
+    matrix.style.display = matrix.style.display === 'none' ? 'block' : 'none';
 }
 
 function calculate() {
     const price = parseFloat(document.getElementById('price').value) || 0;
-    let dp = document.getElementById('useDp').checked ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
+    const dp = document.getElementById('useDp').checked ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
     const months = parseInt(document.getElementById('months').value);
-    const type = document.getElementById('interestType').value;
     const monthlyRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
 
-    if (price <= 0) { alert("Please enter a valid item price."); return; }
+    if (price <= 0) { alert("Please enter a valid price"); return; }
     
-    const loanPrincipal = price; 
-    let schedule = [], monthlyPayment = 0, totalInterest = 0;
-
-    if (type === "amortized") {
-        monthlyPayment = (monthlyRate === 0) ? loanPrincipal / months : (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-        let balance = loanPrincipal;
-        for (let i = 1; i <= months; i++) {
-            let interest = balance * monthlyRate;
-            let principal = monthlyPayment - interest;
-            schedule.push({ month: i, payment: monthlyPayment, interest, principal });
-            balance -= principal;
-        }
-        totalInterest = schedule.reduce((sum, r) => sum + r.interest, 0);
-    } else {
-        const totalInterestCharged = loanPrincipal * monthlyRate * months;
-        monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
-        for (let i = 1; i <= months; i++) {
-            schedule.push({ month: i, payment: monthlyPayment, interest: totalInterestCharged / months, principal: loanPrincipal / months });
-        }
-        totalInterest = totalInterestCharged;
-    }
-
-    let remainingDP = dp;
-    for (let i = months - 1; i >= 0; i--) {
-        if (remainingDP > 0) {
-            let credit = Math.min(remainingDP, schedule[i].payment);
-            schedule[i].dpCredit = credit;
-            schedule[i].actualPayment = schedule[i].payment - credit;
-            remainingDP -= credit;
-        } else {
-            schedule[i].dpCredit = 0;
-            schedule[i].actualPayment = schedule[i].payment;
-        }
-    }
-
-    // New logic for Monthly Add-on display
-    const monthlyAddOnInterest = loanPrincipal * monthlyRate;
+    const totalInterestCharged = price * monthlyRate * months;
+    const monthlyPayment = (price + totalInterestCharged - dp) / months;
 
     document.getElementById('resPrincipal').innerText = peso(price);
-    document.getElementById('resAddOn').innerText = peso(monthlyAddOnInterest);
+    document.getElementById('resAddOn').innerText = peso(price * monthlyRate);
     document.getElementById('resMonthly').innerText = peso(monthlyPayment);
-    document.getElementById('resTotal').innerText = peso(price + totalInterest - dp);
+    document.getElementById('resTotal').innerText = peso(price + totalInterestCharged - dp);
+    
     document.getElementById('resultsArea').style.display = 'block';
+    document.getElementById('btnMatrix').style.display = 'block';
 
-    document.getElementById('matrixArea').innerHTML = `
-        <table>
-            <tr><th>Mo</th><th>Reg. PMT</th><th>DP Applied</th><th>Net Payment</th></tr>
-            ${schedule.map(r => `<tr><td>${r.month}</td><td>${peso(r.payment)}</td><td class="dp-text">-${peso(r.dpCredit)}</td><td class="net-text">${peso(r.actualPayment)}</td></tr>`).join('')}
-        </table>`;
+    let tableHtml = '<table><tr><th>Mo</th><th>Net Payment</th></tr>';
+    for(let i=1; i<=months; i++) {
+        tableHtml += `<tr><td>${i}</td><td>${peso(monthlyPayment)}</td></tr>`;
+    }
+    document.getElementById('matrixArea').innerHTML = tableHtml + '</table>';
 }
 </script>
 </body>
