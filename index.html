@@ -103,7 +103,7 @@
         </div>
         <div class="header-title">
             <h1>Installment Calculator</h1>
-            <p>melvinpangilinan</p>
+            <p>nexus</p>
         </div>
     </div>
 
@@ -235,37 +235,44 @@ function calculate() {
     const loanPrincipal = price; 
     let schedule = [], monthlyPayment = 0, totalInterest = 0;
 
+    // Calculate base installment
     if (type === "amortized") {
         monthlyPayment = (monthlyRate === 0) ? loanPrincipal / months : (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
         let balance = loanPrincipal;
         for (let i = 1; i <= months; i++) {
             let interest = balance * monthlyRate;
             let principal = monthlyPayment - interest;
-            schedule.push({ month: i, payment: monthlyPayment, interest, principal, end: balance - principal });
+            schedule.push({ month: i, payment: monthlyPayment, interest, principal });
             balance -= principal;
-            totalInterest += interest;
         }
+        totalInterest = schedule.reduce((sum, r) => sum + r.interest, 0);
     } else {
         const totalInterestCharged = loanPrincipal * monthlyRate * months;
         monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
         for (let i = 1; i <= months; i++) {
-            schedule.push({ month: i, payment: monthlyPayment, interest: totalInterestCharged / months, principal: loanPrincipal / months, end: loanPrincipal - (loanPrincipal / months * i) });
+            schedule.push({ month: i, payment: monthlyPayment, interest: totalInterestCharged / months, principal: loanPrincipal / months });
         }
         totalInterest = totalInterestCharged;
     }
 
+    // Deduct Downpayment from the end (Last months moving backwards)
     let remainingDP = dp;
-    schedule.forEach(r => {
-        let credit = Math.min(remainingDP, r.payment);
-        r.dpCredit = credit;
-        r.actualPayment = r.payment - credit;
-        remainingDP -= credit;
-    });
+    for (let i = months - 1; i >= 0; i--) {
+        if (remainingDP > 0) {
+            let credit = Math.min(remainingDP, schedule[i].payment);
+            schedule[i].dpCredit = credit;
+            schedule[i].actualPayment = schedule[i].payment - credit;
+            remainingDP -= credit;
+        } else {
+            schedule[i].dpCredit = 0;
+            schedule[i].actualPayment = schedule[i].payment;
+        }
+    }
 
     document.getElementById('resPrincipal').innerText = peso(price);
     document.getElementById('resInterest').innerText = peso(totalInterest);
     document.getElementById('resMonthly').innerText = peso(monthlyPayment);
-    document.getElementById('resTotal').innerText = peso(price + totalInterest);
+    document.getElementById('resTotal').innerText = peso(price + totalInterest - dp);
     document.getElementById('resultsArea').style.display = 'block';
 
     document.getElementById('matrixArea').innerHTML = `
