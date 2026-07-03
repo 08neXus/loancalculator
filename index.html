@@ -270,7 +270,7 @@ tr:hover{
 <button onclick="calculate()">Calculate</button>
 
 <div id="result"></div>
-
+</div>
 <script>
 function peso(num){
     return "₱" + num.toLocaleString(undefined,{
@@ -313,13 +313,13 @@ function calculate(){
         document.getElementById('result').innerHTML = `
         <div class="card">
             <h3>Cash Price</h3>
-            <p>${peso(principal)}</p>
+            <p>${peso(loanAmount)}</p>
         </div>`;
         return;
     }
 
     let schedule = [];
-    let balance = principal;
+    let balance = loanAmount;
 
     let totalInterest = 0;
     let totalPrincipal = 0;
@@ -348,20 +348,20 @@ function calculate(){
         }
 
         else if(type === "simple"){
-            interest = (principal * (rate/100)) / months;
-            payment = (principal + (principal*(rate/100))) / months;
+            interest = (loanAmount * (rate/100)) / months;
+            payment = (loanAmount + (loanAmount*(rate/100))) / months;
             principalPay = payment - interest;
         }
 
         else if(type === "fixed"){
-            interest = (principal * (rate/100)) / months;
-            payment = (principal + principal*(rate/100)) / months;
+            interest = (loanAmount * (rate/100)) / months;
+            payment = (loanAmount + loanAmount*(rate/100)) / months;
             principalPay = payment - interest;
         }
 
         else if(type === "compound"){
             interest = beginning * (rate/100);
-            payment = (principal * Math.pow(1+(rate/100), months)) / months;
+            payment = (loanAmount * Math.pow(1+(rate/100), months)) / months;
             principalPay = payment - interest;
         }
 
