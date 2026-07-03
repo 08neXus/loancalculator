@@ -45,7 +45,7 @@
         .form-label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 8px; }
         
         .input-row { display: flex; align-items: center; gap: 12px; }
-        .input-row .checkbox-wrapper { display: flex; align-items: center; }
+        .checkbox-wrapper { display: flex; align-items: center; }
         
         input[type="checkbox"] { width: 24px; height: 24px; border-radius: 6px; accent-color: var(--primary); cursor: pointer; }
         
@@ -56,6 +56,11 @@
         input[type="number"]:focus { border-color: var(--primary); }
         input[type="number"]:disabled { background-color: var(--bg-color); opacity: 0.6; cursor: not-allowed; }
         
+        /* New Inline Interest Row */
+        .interest-inline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .interest-inline label { margin-bottom: 0; white-space: nowrap; }
+        .interest-inline input { width: 120px; }
+
         select { background-color: var(--select-bg); border: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 40px; }
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -137,14 +142,9 @@
         </div>
     </div>
 
-    <div class="form-group">
-        <label class="form-label">Use custom interest rate (%)</label>
-        <div class="input-row">
-            <div class="checkbox-wrapper">
-                <input type="checkbox" id="useRate" onchange="toggleInput('useRate', 'rate')">
-            </div>
-            <input type="number" id="rate" placeholder="0.00" disabled>
-        </div>
+    <div class="form-group interest-inline">
+        <label class="form-label">Interest Rate (%)</label>
+        <input type="number" id="rate" placeholder="0.00">
     </div>
 
     <div class="btn-row">
@@ -198,25 +198,20 @@ function toggleInput(checkboxId, inputId) {
     const cb = document.getElementById(checkboxId);
     const input = document.getElementById(inputId);
     input.disabled = !cb.checked;
-    if (!cb.checked) input.value = ''; // clear when disabled
+    if (!cb.checked) input.value = '';
 }
 
 function clearForm() {
     document.getElementById('price').value = '';
-    
     document.getElementById('useDp').checked = false;
     document.getElementById('downpayment').value = '';
     document.getElementById('downpayment').disabled = true;
-    
-    document.getElementById('useRate').checked = false;
     document.getElementById('rate').value = '';
-    document.getElementById('rate').disabled = true;
-
     document.getElementById('months').value = '12';
     document.getElementById('interestType').value = 'simple';
-    
     document.getElementById('resultsArea').style.display = 'none';
     document.getElementById('matrixArea').style.display = 'none';
+    document.getElementById('matrixArea').innerHTML = '';
 }
 
 function toggleMatrix() {
@@ -230,122 +225,54 @@ function toggleMatrix() {
 
 function calculate() {
     const price = parseFloat(document.getElementById('price').value) || 0;
-    
-    let dp = 0;
-    if (document.getElementById('useDp').checked) {
-        dp = parseFloat(document.getElementById('downpayment').value) || 0;
-    }
-
+    let dp = document.getElementById('useDp').checked ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
     const months = parseInt(document.getElementById('months').value);
     const type = document.getElementById('interestType').value;
-    
-    let monthlyRate = 0;
-    if (document.getElementById('useRate').checked) {
-        monthlyRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
-    }
+    const monthlyRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
 
-    if (price <= 0) {
-        alert("Please enter a valid item price.");
-        return;
-    }
+    if (price <= 0) { alert("Please enter a valid item price."); return; }
     
-    if (dp >= price) {
-        alert("Downpayment must be less than the Item Price.");
-        return;
-    }
-
-    // Interest calculated on the FULL price
     const loanPrincipal = price; 
-
-    let schedule = [];
-    let monthlyPayment = 0;
-    let totalInterest = 0;
+    let schedule = [], monthlyPayment = 0, totalInterest = 0;
 
     if (type === "amortized") {
-        if (monthlyRate === 0) {
-            monthlyPayment = loanPrincipal / months;
-            let balance = loanPrincipal;
-            for (let i = 1; i <= months; i++) {
-                let principal = monthlyPayment;
-                schedule.push({ month: i, start: balance, payment: monthlyPayment, principal, interest: 0, end: balance - principal });
-                balance -= principal;
-            }
-        } else {
-            monthlyPayment = (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-            let balance = loanPrincipal;
-            for (let i = 1; i <= months; i++) {
-                let interest = balance * monthlyRate;
-                let principal = monthlyPayment - interest;
-                schedule.push({ month: i, start: balance, payment: monthlyPayment, principal, interest, end: balance - principal });
-                balance -= principal;
-                totalInterest += interest;
-            }
-        }
-    } else {
-        // Simple Add-on Interest (Monthly Rate)
-        const totalInterestCharged = loanPrincipal * monthlyRate * months;
-        monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
+        monthlyPayment = (monthlyRate === 0) ? loanPrincipal / months : (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
         let balance = loanPrincipal;
-        
         for (let i = 1; i <= months; i++) {
-            let interest = totalInterestCharged / months;
-            let principal = loanPrincipal / months;
-            schedule.push({ month: i, start: balance, payment: monthlyPayment, principal, interest, end: balance - principal });
+            let interest = balance * monthlyRate;
+            let principal = monthlyPayment - interest;
+            schedule.push({ month: i, payment: monthlyPayment, interest, principal, end: balance - principal });
             balance -= principal;
             totalInterest += interest;
         }
+    } else {
+        const totalInterestCharged = loanPrincipal * monthlyRate * months;
+        monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
+        for (let i = 1; i <= months; i++) {
+            schedule.push({ month: i, payment: monthlyPayment, interest: totalInterestCharged / months, principal: loanPrincipal / months, end: loanPrincipal - (loanPrincipal / months * i) });
+        }
+        totalInterest = totalInterestCharged;
     }
 
-    // Apply the Downpayment to the final months
     let remainingDP = dp;
-    for (let i = months - 1; i >= 0; i--) {
-        if (remainingDP <= 0) {
-            schedule[i].dpCredit = 0;
-            schedule[i].actualPayment = schedule[i].payment;
-            continue;
-        }
-        
-        if (remainingDP >= schedule[i].payment) {
-            schedule[i].dpCredit = schedule[i].payment;
-            schedule[i].actualPayment = 0;
-            remainingDP -= schedule[i].payment;
-        } else {
-            schedule[i].dpCredit = remainingDP;
-            schedule[i].actualPayment = schedule[i].payment - remainingDP;
-            remainingDP = 0;
-        }
-    }
+    schedule.forEach(r => {
+        let credit = Math.min(remainingDP, r.payment);
+        r.dpCredit = credit;
+        r.actualPayment = r.payment - credit;
+        remainingDP -= credit;
+    });
 
-    // Update Summary UI
     document.getElementById('resPrincipal').innerText = peso(price);
     document.getElementById('resInterest').innerText = peso(totalInterest);
     document.getElementById('resMonthly').innerText = peso(monthlyPayment);
     document.getElementById('resTotal').innerText = peso(price + totalInterest);
-    
     document.getElementById('resultsArea').style.display = 'block';
 
-    // Generate Matrix Table
-    let tableHtml = `
+    document.getElementById('matrixArea').innerHTML = `
         <table>
-            <tr>
-                <th>Mo</th>
-                <th>Reg. PMT</th>
-                <th>DP Applied</th>
-                <th>Net Payment</th>
-                <th>Ending</th>
-            </tr>
-            ${schedule.map(r => `<tr>
-                <td>${r.month}</td>
-                <td>${peso(r.payment)}</td>
-                <td class="dp-text">-${peso(r.dpCredit)}</td>
-                <td class="net-text">${peso(r.actualPayment)}</td>
-                <td>${peso(Math.max(0, r.end))}</td>
-            </tr>`).join('')}
+            <tr><th>Mo</th><th>Reg. PMT</th><th>DP Applied</th><th>Net Payment</th></tr>
+            ${schedule.map(r => `<tr><td>${r.month}</td><td>${peso(r.payment)}</td><td class="dp-text">-${peso(r.dpCredit)}</td><td class="net-text">${peso(r.actualPayment)}</td></tr>`).join('')}
         </table>`;
-        
-    document.getElementById('matrixArea').innerHTML = tableHtml;
-    // Keep matrix hidden until user clicks "View Add-On Matrix"
-    document.getElementById('matrixArea').style.display = 'none'; 
 }
 </script>
 </body>
