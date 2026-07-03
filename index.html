@@ -5,84 +5,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Installment Calculator</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { min-height: 100vh; background: linear-gradient(135deg, #e9f0ff, #f8f9ff, #ffffff); padding: 30px 15px; color: #1f1f1f; }
-        .container { max-width: 1000px; margin: auto; background: rgba(255, 255, 255, 0.8); border-radius: 32px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
-        h2 { text-align: center; margin-bottom: 30px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .input-group { display: flex; flex-direction: column; }
-        input, select { height: 50px; border: 1px solid #ddd; border-radius: 12px; padding: 0 15px; font-size: 16px; margin-top: 5px; }
+        :root {
+            --bg-color: #f7f7f9;
+            --card-bg: #ffffff;
+            --text-main: #1c1c1e;
+            --text-muted: #8e8e93;
+            --border-color: #e5e5ea;
+            --input-bg: #ffffff;
+            --select-bg: #f2f2f7;
+            --primary: #5e5ce6;
+            --primary-hover: #4b48b6;
+            --btn-gray: #f2f2f7;
+            --btn-gray-hover: #e5e5ea;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; padding: 20px 10px; }
         
-        .rate-flex { display: flex; gap: 10px; margin-top: 5px; }
-        .rate-flex input { flex: 1; margin-top: 0; }
-        .rate-flex select { width: 120px; margin-top: 0; }
+        .app-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
 
-        /* Button Styles */
-        .button-group { display: flex; gap: 15px; margin-top: 25px; }
-        button { flex: 1; height: 56px; border: none; border-radius: 18px; font-size: 17px; cursor: pointer; transition: 0.2s ease-in-out; }
-        .btn-calc { background: #4285f4; color: #fff; }
-        .btn-calc:hover { background: #3367d6; }
-        .btn-clear { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
-        .btn-clear:hover { background: #e8eaed; }
+        /* Header */
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .header-icon { width: 40px; height: 40px; background: var(--bg-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); font-size: 18px; border: 1px solid var(--border-color); }
+        .header-title h1 { font-size: 20px; font-weight: 700; margin: 0; }
+        .header-title p { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-        .table-wrapper { margin-top: 30px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; white-space: nowrap; }
-        th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
-        th { background: #f8f9fa; }
-        .dp-text { color: #0f9d58; }
+        /* Form Elements */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+        
+        .input-row { display: flex; align-items: center; gap: 12px; }
+        .input-row .checkbox-wrapper { display: flex; align-items: center; }
+        
+        input[type="checkbox"] { width: 24px; height: 24px; border-radius: 6px; accent-color: var(--primary); cursor: pointer; }
+        
+        input[type="number"], select {
+            width: 100%; height: 48px; border-radius: var(--radius-md); font-size: 15px; padding: 0 16px; outline: none; transition: 0.2s;
+        }
+        input[type="number"] { border: 1px solid var(--border-color); background-color: var(--input-bg); }
+        input[type="number"]:focus { border-color: var(--primary); }
+        input[type="number"]:disabled { background-color: var(--bg-color); opacity: 0.6; cursor: not-allowed; }
+        
+        select { background-color: var(--select-bg); border: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 40px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* Buttons */
+        .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+        button { height: 52px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-calc { flex: 1.2; background-color: var(--primary); color: white; }
+        .btn-calc:hover { background-color: var(--primary-hover); }
+        .btn-clear { flex: 0.8; background-color: var(--btn-gray); color: var(--text-main); }
+        .btn-clear:hover { background-color: var(--btn-gray-hover); }
+        .btn-matrix { width: 100%; background-color: var(--btn-gray); color: var(--text-main); margin-top: 16px; }
+        .btn-matrix:hover { background-color: var(--btn-gray-hover); }
+
+        /* Results Card */
+        .results-container { margin-top: 24px; display: none; }
+        .results-card { background-color: #fcfcfd; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; text-align: center; margin-bottom: 12px; }
+        .results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .result-item span { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .result-item strong { font-size: 16px; color: var(--text-main); }
+        .total-payable span { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .total-payable strong { font-size: 24px; color: var(--text-main); font-weight: 700; }
+
+        /* Table */
+        .table-wrapper { margin-top: 16px; overflow-x: auto; display: none; border: 1px solid var(--border-color); border-radius: var(--radius-md); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--select-bg); font-weight: 600; color: var(--text-muted); }
+        tr:last-child td { border-bottom: none; }
+        .dp-text { color: #34c759; }
         .net-text { font-weight: bold; }
-        .card-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
-        .card { background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #eee; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Installment Calculator</h2>
-    <div class="form-grid">
-        <div class="input-group">
-            <label>Item Price</label>
-            <input type="number" id="price" placeholder="e.g. 50000">
+<div class="app-container">
+    <div class="header">
+        <div class="header-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16.01" y2="14"></line><line x1="16" y1="18" x2="16.01" y2="18"></line><line x1="12" y1="14" x2="12.01" y2="14"></line><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="8" y1="18" x2="8.01" y2="18"></line></svg>
         </div>
-        <div class="input-group">
-            <label>Downpayment</label>
-            <input type="number" id="downpayment" placeholder="e.g. 5000">
+        <div class="header-title">
+            <h1>Installment Calculator</h1>
+            <p>nexus</p>
         </div>
-        <div class="input-group">
-            <label>Term (Months)</label>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Item Price (₱)</label>
+        <input type="number" id="price" placeholder="Enter item price">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Use downpayment (optional)</label>
+        <div class="input-row">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="useDp" onchange="toggleInput('useDp', 'downpayment')">
+            </div>
+            <input type="number" id="downpayment" placeholder="Enter downpayment amount" disabled>
+        </div>
+    </div>
+
+    <div class="grid-2 form-group">
+        <div>
+            <label class="form-label">Payment Term</label>
             <select id="months">
-                <option value="3">3 Months</option>
-                <option value="6">6 Months</option>
-                <option value="9">9 Months</option>
-                <option value="12" selected>12 Months</option>
-                <option value="24">24 Months</option>
+                <option value="3">3 months</option>
+                <option value="6">6 months</option>
+                <option value="9">9 months</option>
+                <option value="12" selected>12 months</option>
+                <option value="24">24 months</option>
             </select>
         </div>
-        <div class="input-group">
-            <label>Interest Type</label>
+        <div>
+            <label class="form-label">Interest Type</label>
             <select id="interestType">
-                <option value="simple">Simple (Add-on)</option>
+                <option value="simple">Simple (Monthly)</option>
                 <option value="amortized">Amortized</option>
             </select>
         </div>
-        <div class="input-group">
-            <label>Interest Rate (%)</label>
-            <div class="rate-flex">
-                <input type="number" id="rate" placeholder="e.g. 1">
-                <select id="ratePeriod">
-                    <option value="monthly">Monthly</option>
-                    <option value="annual">Annual</option>
-                </select>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Use custom interest rate (%)</label>
+        <div class="input-row">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="useRate" onchange="toggleInput('useRate', 'rate')">
+            </div>
+            <input type="number" id="rate" placeholder="0.00" disabled>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button type="button" class="btn-calc" onclick="calculate()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+            Calculate
+        </button>
+        <button type="button" class="btn-clear" onclick="clearForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
+            Clear
+        </button>
+    </div>
+
+    <button type="button" class="btn-matrix" onclick="toggleMatrix()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+        View Add-On Matrix
+    </button>
+
+    <div id="resultsArea" class="results-container">
+        <div class="results-card">
+            <div class="results-grid">
+                <div class="result-item">
+                    <span>Principal</span>
+                    <strong id="resPrincipal">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Total interest</span>
+                    <strong id="resInterest">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>Monthly</span>
+                    <strong id="resMonthly">-</strong>
+                </div>
+            </div>
+            <div class="total-payable">
+                <span>Total Amount Payable</span>
+                <strong id="resTotal">-</strong>
             </div>
         </div>
     </div>
-    
-    <div class="button-group">
-        <button type="button" class="btn-clear" onclick="clearForm()">Clear</button>
-        <button type="button" class="btn-calc" onclick="calculate()">Calculate</button>
-    </div>
-    
-    <div id="result"></div>
+
+    <div id="matrixArea" class="table-wrapper"></div>
 </div>
 
 <script>
@@ -90,40 +194,63 @@ function peso(num) {
     return "₱" + num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
+function toggleInput(checkboxId, inputId) {
+    const cb = document.getElementById(checkboxId);
+    const input = document.getElementById(inputId);
+    input.disabled = !cb.checked;
+    if (!cb.checked) input.value = ''; // clear when disabled
+}
+
 function clearForm() {
     document.getElementById('price').value = '';
+    
+    document.getElementById('useDp').checked = false;
     document.getElementById('downpayment').value = '';
+    document.getElementById('downpayment').disabled = true;
+    
+    document.getElementById('useRate').checked = false;
     document.getElementById('rate').value = '';
+    document.getElementById('rate').disabled = true;
+
     document.getElementById('months').value = '12';
     document.getElementById('interestType').value = 'simple';
-    document.getElementById('ratePeriod').value = 'monthly';
-    document.getElementById('result').innerHTML = '';
+    
+    document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('matrixArea').style.display = 'none';
+}
+
+function toggleMatrix() {
+    const matrix = document.getElementById('matrixArea');
+    if (matrix.innerHTML !== "") {
+        matrix.style.display = matrix.style.display === 'none' ? 'block' : 'none';
+    } else {
+        alert("Please calculate first to view the matrix.");
+    }
 }
 
 function calculate() {
     const price = parseFloat(document.getElementById('price').value) || 0;
-    const dp = parseFloat(document.getElementById('downpayment').value) || 0;
+    
+    let dp = 0;
+    if (document.getElementById('useDp').checked) {
+        dp = parseFloat(document.getElementById('downpayment').value) || 0;
+    }
+
     const months = parseInt(document.getElementById('months').value);
     const type = document.getElementById('interestType').value;
     
-    // Handle Monthly vs Annual Rate Conversion
-    const rateInput = (parseFloat(document.getElementById('rate').value) || 0) / 100;
-    const ratePeriod = document.getElementById('ratePeriod').value;
-    
     let monthlyRate = 0;
-    if (ratePeriod === "monthly") {
-        monthlyRate = rateInput;
-    } else {
-        monthlyRate = rateInput / 12;
+    if (document.getElementById('useRate').checked) {
+        monthlyRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
     }
 
     if (price <= 0) {
-        document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Please enter a valid item price.</p>";
+        alert("Please enter a valid item price.");
         return;
     }
     
     if (dp >= price) {
-        document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Downpayment must be less than the Item Price.</p>";
+        alert("Downpayment must be less than the Item Price.");
         return;
     }
 
@@ -134,7 +261,6 @@ function calculate() {
     let monthlyPayment = 0;
     let totalInterest = 0;
 
-    // Generate Standard Schedule (Based on Full Price)
     if (type === "amortized") {
         if (monthlyRate === 0) {
             monthlyPayment = loanPrincipal / months;
@@ -156,8 +282,7 @@ function calculate() {
             }
         }
     } else {
-        // Bank Credit Card Style: Simple Add-on Interest
-        // Principal * Monthly Rate * Number of Months
+        // Simple Add-on Interest (Monthly Rate)
         const totalInterestCharged = loanPrincipal * monthlyRate * months;
         monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
         let balance = loanPrincipal;
@@ -191,19 +316,19 @@ function calculate() {
         }
     }
 
-    let html = `
-        <div class="card-summary">
-            <div class="card"><strong>Standard Monthly:</strong><br>${peso(monthlyPayment)}</div>
-            <div class="card"><strong>Total Interest:</strong><br>${peso(totalInterest)}</div>
-            <div class="card"><strong>Total Cost:</strong><br>${peso(price + totalInterest)}</div>
-        </div>
-        <div class="table-wrapper">
+    // Update Summary UI
+    document.getElementById('resPrincipal').innerText = peso(price);
+    document.getElementById('resInterest').innerText = peso(totalInterest);
+    document.getElementById('resMonthly').innerText = peso(monthlyPayment);
+    document.getElementById('resTotal').innerText = peso(price + totalInterest);
+    
+    document.getElementById('resultsArea').style.display = 'block';
+
+    // Generate Matrix Table
+    let tableHtml = `
         <table>
             <tr>
                 <th>Mo</th>
-                <th>Beginning</th>
-                <th>Principal</th>
-                <th>Interest</th>
                 <th>Reg. PMT</th>
                 <th>DP Applied</th>
                 <th>Net Payment</th>
@@ -211,17 +336,16 @@ function calculate() {
             </tr>
             ${schedule.map(r => `<tr>
                 <td>${r.month}</td>
-                <td>${peso(r.start)}</td>
-                <td>${peso(r.principal)}</td>
-                <td>${peso(r.interest)}</td>
                 <td>${peso(r.payment)}</td>
                 <td class="dp-text">-${peso(r.dpCredit)}</td>
                 <td class="net-text">${peso(r.actualPayment)}</td>
                 <td>${peso(Math.max(0, r.end))}</td>
             </tr>`).join('')}
-        </table>
-        </div>`;
-    document.getElementById('result').innerHTML = html;
+        </table>`;
+        
+    document.getElementById('matrixArea').innerHTML = tableHtml;
+    // Keep matrix hidden until user clicks "View Add-On Matrix"
+    document.getElementById('matrixArea').style.display = 'none'; 
 }
 </script>
 </body>
