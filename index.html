@@ -422,6 +422,15 @@ function calculate(){
 
     document.getElementById('result').innerHTML = html;
 }
+function toggleDP() {
+    const dp = document.getElementById("downpaymentDiv");
+    const check = document.getElementById("useDP");
+    if (check.checked) {
+        dp.style.display = "block";
+    } else {
+        dp.style.display = "none";
+    }
+}
 </script>
 
 </body>
