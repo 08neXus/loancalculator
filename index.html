@@ -56,7 +56,6 @@
         input[type="number"]:focus { border-color: var(--primary); }
         input[type="number"]:disabled { background-color: var(--bg-color); opacity: 0.6; cursor: not-allowed; }
         
-        /* New Inline Interest Row */
         .interest-inline { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .interest-inline label { margin-bottom: 0; white-space: nowrap; }
         .interest-inline input { width: 120px; }
@@ -171,8 +170,8 @@
                     <strong id="resPrincipal">-</strong>
                 </div>
                 <div class="result-item">
-                    <span>Total interest</span>
-                    <strong id="resInterest">-</strong>
+                    <span>Monthly Add-on</span>
+                    <strong id="resAddOn">-</strong>
                 </div>
                 <div class="result-item">
                     <span>Monthly</span>
@@ -235,7 +234,6 @@ function calculate() {
     const loanPrincipal = price; 
     let schedule = [], monthlyPayment = 0, totalInterest = 0;
 
-    // Calculate base installment
     if (type === "amortized") {
         monthlyPayment = (monthlyRate === 0) ? loanPrincipal / months : (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
         let balance = loanPrincipal;
@@ -255,7 +253,6 @@ function calculate() {
         totalInterest = totalInterestCharged;
     }
 
-    // Deduct Downpayment from the end (Last months moving backwards)
     let remainingDP = dp;
     for (let i = months - 1; i >= 0; i--) {
         if (remainingDP > 0) {
@@ -269,8 +266,11 @@ function calculate() {
         }
     }
 
+    // New logic for Monthly Add-on display
+    const monthlyAddOnInterest = loanPrincipal * monthlyRate;
+
     document.getElementById('resPrincipal').innerText = peso(price);
-    document.getElementById('resInterest').innerText = peso(totalInterest);
+    document.getElementById('resAddOn').innerText = peso(monthlyAddOnInterest);
     document.getElementById('resMonthly').innerText = peso(monthlyPayment);
     document.getElementById('resTotal').innerText = peso(price + totalInterest - dp);
     document.getElementById('resultsArea').style.display = 'block';
