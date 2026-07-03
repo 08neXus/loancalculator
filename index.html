@@ -185,8 +185,8 @@ tr:hover{
     accent-color:#4285f4;
     flex-shrink:0;
 }
-#downpaymentDiv {
-    display: block;
+#downpaymentDiv{
+    display:none;
 }
 .card-summary{
     display:grid;
@@ -265,10 +265,11 @@ tr:hover{
         <input type="number" id="rate" placeholder="Enter interest rate">
     </div>
     
-    <button onclick="calculate()">Calculate</button>
+   </div>
 
-    <div id="result"></div>
-</div>
+<button onclick="calculate()">Calculate</button>
+
+<div id="result"></div>
 
 <script>
 function peso(num){
@@ -283,9 +284,8 @@ function toggleDP() {
     const useDP = document.getElementById("useDP");
     const dpInput = document.getElementById("downpayment");
 
-    dpDiv.style.display = "block";
-    dpInput.disabled = !useDP.checked;
-
+    dpDiv.style.display =
+    useDP.checked ? "block" : "none";
     if (!useDP.checked) {
         dpInput.value = "";
     }
@@ -308,7 +308,6 @@ function calculate(){
     }
 
     let loanAmount = price; // interest always based on full price
-    let dp = useDP ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
 
     if(months === 0){
         document.getElementById('result').innerHTML = `
@@ -320,7 +319,7 @@ function calculate(){
     }
 
     let schedule = [];
-    let balance = loanAmount;
+    let balance = principal;
 
     let totalInterest = 0;
     let totalPrincipal = 0;
