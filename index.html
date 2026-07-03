@@ -1,159 +1,326 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Installment Calculator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Installment Calculator</title>
 
-  <!-- Roboto + Material Symbols -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f4f4;
+    margin:0;
+    padding:20px;
+}
 
-  <link rel="stylesheet" href="style.css">
+.container{
+    max-width:900px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align:center;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:5px;
+}
+
+input,select,button{
+    width:100%;
+    padding:10px;
+    box-sizing:border-box;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+button{
+    background:#007bff;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#0056b3;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    font-size:14px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+
+th{
+    background:#007bff;
+    color:white;
+}
+
+#downpaymentDiv{
+    display:none;
+}
+
+@media(max-width:768px){
+    table{
+        font-size:12px;
+    }
+}
+</style>
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <img class="brand-icon" src="icon.png" alt="app icon">
-      <div>
-        <h1 class="title">Installment Calculator</h1>
-        <p class="subtitle">nexus</p>
-      </div>
-    </header>
 
-    <section class="card">
-      <div class="row">
-        <label class="label">Item Price (₱)</label>
-        <input id="price" type="number" inputmode="decimal" placeholder="Enter item price" />
-      </div>
+<div class="container">
+    <h2>Installment Calculator</h2>
 
-      <!-- DOWNPAYMENT OPTIONAL -->
-      <div class="row">
-        <label class="label">Use downpayment (optional)</label>
-        <div class="row two-col">
-          <div class="col">
-            <input type="checkbox" id="downToggle" />
-          </div>
-          <div class="col">
-            <input id="downPayment" type="number" placeholder="Enter downpayment amount" disabled />
-          </div>
-        </div>
-      </div>
+    <div class="input-group">
+        <label>Item Price</label>
+        <input type="number" id="price" placeholder="Enter item price">
+    </div>
 
-      <!-- Payment Term + Interest Type -->
-      <div class="row two-col">
-        <div class="col">
-          <label class="label">Payment Term</label>
-          <select id="term" onchange="updateAutoRate()">
-            <option value="0" selected>0 months (full payment)</option>
-            <option value="3">3 months</option>
-            <option value="6">6 months</option>
-            <option value="9">9 months</option>
-            <option value="12">12 months</option>
-            <option value="24">24 months</option>
-          </select>
-        </div>
+    <div class="input-group">
+        <label>
+            <input type="checkbox" id="useDP">
+            Use Downpayment
+        </label>
+    </div>
 
-        <div class="col">
-          <label class="label">Interest Type</label>
-          <select id="interestType">
+    <div class="input-group" id="downpaymentDiv">
+        <label>Downpayment Amount</label>
+        <input type="number" id="downpayment" placeholder="Enter downpayment">
+    </div>
+
+    <div class="input-group">
+        <label>Payment Term</label>
+        <select id="months">
+            <option value="0">0 Month (Cash)</option>
+            <option value="3">3 Months</option>
+            <option value="6">6 Months</option>
+            <option value="9">9 Months</option>
+            <option value="12">12 Months</option>
+            <option value="24">24 Months</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>Interest Type</label>
+        <select id="interestType">
             <option value="amortized">Amortized</option>
-            <option value="simple" selected>Simple (Monthly Add-On)</option>
+            <option value="simple">Simple (Monthly Add-on)</option>
             <option value="fixed">Fixed</option>
             <option value="compound">Compound</option>
-          </select>
-        </div>
-      </div>
+        </select>
+    </div>
 
-      <!-- Custom interest -->
-      <div class="row">
-        <label class="label">Use custom interest rate</label>
-        <div class="row two-col">
-          <div class="col">
-            <input type="checkbox" id="customToggle" />
-          </div>
-          <div class="col">
-            <input id="customInterest" type="number" placeholder="Enter custom interest %" disabled />
-          </div>
-        </div>
-      </div>
+    <div class="input-group">
+        <label>Interest Rate (%)</label>
+        <input type="number" id="rate" placeholder="Enter interest rate">
+    </div>
 
-      <div class="row btn-row">
-        <button id="calcBtn" class="btn primary">
-          <span class="material-symbols-outlined">calculate</span> Calculate
-        </button>
-        <button id="clearBtn" class="btn neutral">
-          <span class="material-symbols-outlined">refresh</span> Clear
-        </button>
-      </div>
+    <button onclick="calculate()">Calculate</button>
 
-      <!-- MATRIX BUTTON -->
-      <div class="matrix-btn-row">
-        <button id="matrixBtn" class="btn neutral">
-          <span class="material-symbols-outlined">table_chart</span> View Add-On Matrix
-        </button>
-      </div>
-
-      <!-- POPUP MODAL -->
-      <div id="matrixModal" class="popup-overlay" aria-hidden="true">
-        <div class="popup" role="dialog" aria-modal="true">
-          <h3>Monthly Add-On Interest Matrix</h3>
-          <table class="matrix-table">
-            <thead>
-              <tr><th>Term</th><th>Rate</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>0</td><td>0%</td></tr>
-              <tr><td>3</td><td>1.5%</td></tr>
-              <tr><td>6</td><td>2%</td></tr>
-              <tr><td>9</td><td>2.5%</td></tr>
-              <tr><td>12</td><td>3%</td></tr>
-              <tr><td>24</td><td>4%</td></tr>
-            </tbody>
-          </table>
-          <button id="closeMatrix" class="btn primary" style="margin-top:16px">Close</button>
-        </div>
-      </div>
-
-      <!-- SUMMARY -->
-      <!-- SUMMARY -->
-<div class="row summary-row hidden" id="summaryCard">
-  <div class="summary-item">
-    <div class="s-label">Principal</div>
-    <div class="s-value" id="principalVal">—</div>
-  </div>
-
-  <div class="summary-item">
-    <div class="s-label">Monthly</div>
-    <div class="s-value" id="monthlyVal">—</div>
-  </div>
+    <div id="result"></div>
 </div>
 
-      <!-- BREAKDOWN -->
-      <div class="table-wrapper">
-        <table id="breakdown" class="table">
-          <thead>
-<tr>
-  <th>Month</th>
-  <th>Beg Bal</th>
-  <th>Interest</th>
-  <th>Principal</th>
-  <th>End Bal</th>
-  <th>Amortized</th>
-</tr>
-</thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
+<script>
+document.getElementById("useDP").addEventListener("change", function () {
+    document.getElementById("downpaymentDiv").style.display =
+        this.checked ? "block" : "none";
+});
 
-    <div id="toast" class="toast">Cleared</div>
+function peso(num){
+    return "₱" + num.toLocaleString(undefined,{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    });
+}
 
-    <footer class="footer">
-      © Created by melvinpangilinan
-    </footer>
-  </main>
+function calculate(){
 
-  <script src="script.js"></script>
+    let price = parseFloat(document.getElementById('price').value) || 0;
+    let months = parseInt(document.getElementById('months').value);
+    let rate = parseFloat(document.getElementById('rate').value) || 0;
+    let type = document.getElementById('interestType').value;
+    let dp = document.getElementById('useDP').checked
+        ? parseFloat(document.getElementById('downpayment').value) || 0
+        : 0;
+
+    if(price<=0){
+        alert("Please enter item price.");
+        return;
+    }
+
+    if(months===0){
+        document.getElementById('result').innerHTML=
+            "<h3>Cash Price: "+peso(price-dp)+"</h3>";
+        return;
+    }
+
+    let balance = price;
+    let monthlyPayment = 0;
+    let schedule = [];
+
+    if(type==="amortized"){
+        let r = (rate/100)/12;
+
+        if(r===0){
+            monthlyPayment = balance/months;
+        }else{
+            monthlyPayment =
+                balance*r*Math.pow(1+r,months)/
+                (Math.pow(1+r,months)-1);
+        }
+
+        for(let i=1;i<=months;i++){
+            let beginning = balance;
+            let interest = beginning*r;
+            let principal = monthlyPayment-interest;
+            let ending = beginning-principal;
+
+            schedule.push({
+                month:i,
+                beginning,
+                payment:monthlyPayment,
+                principal,
+                interest,
+                ending
+            });
+
+            balance = ending;
+        }
+    }
+
+    else if(type==="simple"){
+        let totalInterest = price*(rate/100)*months;
+        let total = price+totalInterest;
+        monthlyPayment = total/months;
+
+        for(let i=1;i<=months;i++){
+            let beginning = balance;
+            let interest = price*(rate/100);
+            let principal = monthlyPayment-interest;
+            let ending = beginning-principal;
+
+            schedule.push({
+                month:i,
+                beginning,
+                payment:monthlyPayment,
+                principal,
+                interest,
+                ending
+            });
+
+            balance = ending;
+        }
+    }
+
+    else if(type==="fixed"){
+        let totalInterest = price*(rate/100);
+        let total = price+totalInterest;
+        monthlyPayment = total/months;
+
+        for(let i=1;i<=months;i++){
+            let beginning = balance;
+            let interest = totalInterest/months;
+            let principal = monthlyPayment-interest;
+            let ending = beginning-principal;
+
+            schedule.push({
+                month:i,
+                beginning,
+                payment:monthlyPayment,
+                principal,
+                interest,
+                ending
+            });
+
+            balance = ending;
+        }
+    }
+
+    else if(type==="compound"){
+        let r = rate/100;
+        let total = price*Math.pow((1+r),months);
+        monthlyPayment = total/months;
+
+        for(let i=1;i<=months;i++){
+            let beginning = balance;
+            let interest = beginning*r;
+            let principal = monthlyPayment-interest;
+            let ending = beginning-principal;
+
+            schedule.push({
+                month:i,
+                beginning,
+                payment:monthlyPayment,
+                principal,
+                interest,
+                ending
+            });
+
+            balance = ending;
+        }
+    }
+
+    // Deduct downpayment from last month(s)
+    let remainingDP = dp;
+
+    for(let i=schedule.length-1;i>=0;i--){
+        if(remainingDP<=0) break;
+
+        if(remainingDP >= schedule[i].payment){
+            remainingDP -= schedule[i].payment;
+            schedule[i].payment = 0;
+        }else{
+            schedule[i].payment -= remainingDP;
+            remainingDP = 0;
+        }
+    }
+
+    let html = `
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Beginning Balance</th>
+            <th>Payment</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Ending Balance</th>
+        </tr>`;
+
+    schedule.forEach(row=>{
+        html += `
+        <tr>
+            <td>${row.month}</td>
+            <td>${peso(Math.max(0,row.beginning))}</td>
+            <td>${peso(Math.max(0,row.payment))}</td>
+            <td>${peso(Math.max(0,row.principal))}</td>
+            <td>${peso(Math.max(0,row.interest))}</td>
+            <td>${peso(Math.max(0,row.ending))}</td>
+        </tr>`;
+    });
+
+    html += "</table>";
+
+    document.getElementById('result').innerHTML = html;
+}
+</script>
+
 </body>
 </html>
