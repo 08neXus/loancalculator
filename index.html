@@ -181,6 +181,28 @@ tr:hover{
 #downpaymentDiv {
     display: block;
 }
+.card-summary{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:rgba(255,255,255,0.7);
+    padding:15px;
+    border-radius:18px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    text-align:center;
+}
+
+.month-card{
+    background:rgba(255,255,255,0.6);
+    margin-bottom:15px;
+    padding:15px;
+    border-radius:18px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.06);
+}
 </style>
 </head>
 <body>
@@ -242,26 +264,24 @@ tr:hover{
 </div>
 
 <script>
-function toggleDP() {
-    const dpDiv = document.getElementById("downpaymentDiv");
-    const useDP = document.getElementById("useDP");
-    const dpInput = document.getElementById("downpayment");
-
-    if (useDP.checked) {
-        dpDiv.style.display = "block";
-        dpInput.disabled = false;
-    } else {
-        dpDiv.style.display = "block";   // KEEP VISIBLE
-        dpInput.disabled = true;         // JUST DISABLE
-        dpInput.value = "";
-    }
-}
-
 function peso(num){
     return "₱" + num.toLocaleString(undefined,{
         minimumFractionDigits:2,
         maximumFractionDigits:2
     });
+}
+
+function toggleDP() {
+    const dpDiv = document.getElementById("downpaymentDiv");
+    const useDP = document.getElementById("useDP");
+    const dpInput = document.getElementById("downpayment");
+
+    dpDiv.style.display = "block";
+    dpInput.disabled = !useDP.checked;
+
+    if (!useDP.checked) {
+        dpInput.value = "";
+    }
 }
 
 function calculate(){
@@ -282,68 +302,137 @@ function calculate(){
     let principal = price - dp;
     if(principal < 0) principal = 0;
 
-    let schedule = [];
-
     if(months === 0){
-        document.getElementById('result').innerHTML =
-            "<h3>Cash Price: " + peso(principal) + "</h3>";
+        document.getElementById('result').innerHTML = `
+            <div class="card">
+                <h3>Cash Price</h3>
+                <p>${peso(principal)}</p>
+            </div>`;
         return;
     }
 
+    let schedule = [];
     let balance = principal;
+    let totalInterest = 0;
+    let totalPrincipal = 0;
+
+    let monthlyPayment = 0;
+
+    let r = (rate/100)/12;
 
     if(type === "amortized"){
-        let r = (rate/100)/12;
-
-        let monthlyPayment =
+        monthlyPayment =
             r === 0 ? balance/months :
             (balance*r*Math.pow(1+r,months)) /
             (Math.pow(1+r,months)-1);
+    }
 
-        for(let i=1;i<=months;i++){
-            let beginning = balance;
-            let interest = beginning * r;
-            let principalPay = monthlyPayment - interest;
-            let ending = beginning - principalPay;
+    for(let i=1;i<=months;i++){
 
-            schedule.push({
-                month:i,
-                beginning,
-                payment:monthlyPayment,
-                principal:principalPay,
-                interest,
-                ending
-            });
+        let beginning = balance;
+        let interest = 0;
+        let payment = 0;
+        let principalPay = 0;
 
-            balance = ending;
+        if(type === "amortized"){
+            interest = beginning * r;
+            payment = monthlyPayment;
+            principalPay = payment - interest;
+        }
+
+        else if(type === "simple"){
+            interest = (principal * (rate/100)) / months;
+            payment = (principal + (principal*(rate/100))) / months;
+            principalPay = payment - interest;
+        }
+
+        else if(type === "fixed"){
+            interest = (principal * (rate/100)) / months;
+            payment = (principal + principal*(rate/100)) / months;
+            principalPay = payment - interest;
+        }
+
+        else if(type === "compound"){
+            interest = beginning * (rate/100);
+            payment = (principal * Math.pow(1+(rate/100), months)) / months;
+            principalPay = payment - interest;
+        }
+
+        let ending = beginning - principalPay;
+
+        schedule.push({
+            month:i,
+            beginning,
+            payment,
+            principal:principalPay,
+            interest,
+            ending
+        });
+
+        balance = ending;
+
+        totalInterest += interest;
+        totalPrincipal += principalPay;
+    }
+
+    // 💰 DOWNPAYMENT DISTRIBUTED TO LAST MONTHS
+    let remainingDP = dp;
+
+    for(let i=schedule.length-1;i>=0;i--){
+        if(remainingDP <= 0) break;
+
+        let row = schedule[i];
+
+        if(remainingDP >= row.payment){
+            remainingDP -= row.payment;
+            totalPrincipal -= row.principal;
+            totalInterest -= row.interest;
+
+            row.payment = 0;
+            row.principal = 0;
+            row.interest = 0;
+        } else {
+            let reduceRatio = remainingDP / row.payment;
+
+            row.payment -= remainingDP;
+            row.principal -= row.principal * reduceRatio;
+            row.interest -= row.interest * reduceRatio;
+
+            totalPrincipal -= row.principal * reduceRatio;
+            totalInterest -= row.interest * reduceRatio;
+
+            remainingDP = 0;
         }
     }
 
+    // 📱 CARD OUTPUT UI
     let html = `
-    <div class="table-wrapper">
-    <table>
-        <tr>
-            <th>Month</th>
-            <th>Beginning Balance</th>
-            <th>Payment</th>
-            <th>Principal</th>
-            <th>Interest</th>
-            <th>Ending Balance</th>
-        </tr>`;
+    <div class="card-summary">
+        <div class="card">
+            <h3>Total Principal Paid</h3>
+            <p>${peso(totalPrincipal)}</p>
+        </div>
+        <div class="card">
+            <h3>Total Interest</h3>
+            <p>${peso(totalInterest)}</p>
+        </div>
+        <div class="card">
+            <h3>Total Downpayment</h3>
+            <p>${peso(dp)}</p>
+        </div>
+    </div>`;
 
-    schedule.forEach(row=>{
+    schedule.forEach(r=>{
         html += `
-        <tr>
-            <td>${row.month}</td>
-            <td>${peso(Math.max(0,row.beginning))}</td>
-            <td>${peso(Math.max(0,row.payment))}</td>
-            <td>${peso(Math.max(0,row.principal))}</td>
-            <td>${peso(Math.max(0,row.interest))}</td>
-            <td>${peso(Math.max(0,row.ending))}</td>
-        </tr>`;
+        <div class="month-card">
+            <h3>Month ${r.month}</h3>
+            <p><b>Beginning:</b> ${peso(r.beginning)}</p>
+            <p><b>Payment:</b> ${peso(r.payment)}</p>
+            <p><b>Principal:</b> ${peso(r.principal)}</p>
+            <p><b>Interest:</b> ${peso(r.interest)}</p>
+            <p><b>Ending:</b> ${peso(r.ending)}</p>
+        </div>`;
     });
-
-    html += `</table></div>`;
 
     document.getElementById('result').innerHTML = html;
 }
