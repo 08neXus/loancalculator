@@ -13,6 +13,10 @@
         .input-group { display: flex; flex-direction: column; }
         input, select { height: 50px; border: 1px solid #ddd; border-radius: 12px; padding: 0 15px; font-size: 16px; margin-top: 5px; }
         
+        .rate-flex { display: flex; gap: 10px; margin-top: 5px; }
+        .rate-flex input { flex: 1; margin-top: 0; }
+        .rate-flex select { width: 120px; margin-top: 0; }
+
         /* Button Styles */
         .button-group { display: flex; gap: 15px; margin-top: 25px; }
         button { flex: 1; height: 56px; border: none; border-radius: 18px; font-size: 17px; cursor: pointer; transition: 0.2s ease-in-out; }
@@ -61,8 +65,14 @@
             </select>
         </div>
         <div class="input-group">
-            <label>Annual Interest Rate (%)</label>
-            <input type="number" id="rate" placeholder="e.g. 10">
+            <label>Interest Rate (%)</label>
+            <div class="rate-flex">
+                <input type="number" id="rate" placeholder="e.g. 1">
+                <select id="ratePeriod">
+                    <option value="monthly">Monthly</option>
+                    <option value="annual">Annual</option>
+                </select>
+            </div>
         </div>
     </div>
     
@@ -85,6 +95,7 @@ function clearForm() {
     document.getElementById('rate').value = '';
     document.getElementById('months').value = '12';
     document.getElementById('interestType').value = 'simple';
+    document.getElementById('ratePeriod').value = 'monthly';
     document.getElementById('result').innerHTML = '';
 }
 
@@ -92,8 +103,18 @@ function calculate() {
     const price = parseFloat(document.getElementById('price').value) || 0;
     const dp = parseFloat(document.getElementById('downpayment').value) || 0;
     const months = parseInt(document.getElementById('months').value);
-    const annualRate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
     const type = document.getElementById('interestType').value;
+    
+    // Handle Monthly vs Annual Rate Conversion
+    const rateInput = (parseFloat(document.getElementById('rate').value) || 0) / 100;
+    const ratePeriod = document.getElementById('ratePeriod').value;
+    
+    let monthlyRate = 0;
+    if (ratePeriod === "monthly") {
+        monthlyRate = rateInput;
+    } else {
+        monthlyRate = rateInput / 12;
+    }
 
     if (price <= 0) {
         document.getElementById('result').innerHTML = "<p style='color:red; text-align:center; margin-top:20px;'>Please enter a valid item price.</p>";
@@ -105,7 +126,7 @@ function calculate() {
         return;
     }
 
-    // Notice: Interest is now calculated on the FULL price, not price - dp.
+    // Interest calculated on the FULL price
     const loanPrincipal = price; 
 
     let schedule = [];
@@ -114,7 +135,7 @@ function calculate() {
 
     // Generate Standard Schedule (Based on Full Price)
     if (type === "amortized") {
-        if (annualRate === 0) {
+        if (monthlyRate === 0) {
             monthlyPayment = loanPrincipal / months;
             let balance = loanPrincipal;
             for (let i = 1; i <= months; i++) {
@@ -123,11 +144,10 @@ function calculate() {
                 balance -= principal;
             }
         } else {
-            const r = annualRate / 12;
-            monthlyPayment = (loanPrincipal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+            monthlyPayment = (loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
             let balance = loanPrincipal;
             for (let i = 1; i <= months; i++) {
-                let interest = balance * r;
+                let interest = balance * monthlyRate;
                 let principal = monthlyPayment - interest;
                 schedule.push({ month: i, start: balance, payment: monthlyPayment, principal, interest, end: balance - principal });
                 balance -= principal;
@@ -135,10 +155,12 @@ function calculate() {
             }
         }
     } else {
-        // Simple Add-on Interest
-        const totalInterestCharged = loanPrincipal * annualRate * (months / 12);
+        // Bank Credit Card Style: Simple Add-on Interest
+        // Principal * Monthly Rate * Number of Months
+        const totalInterestCharged = loanPrincipal * monthlyRate * months;
         monthlyPayment = (loanPrincipal + totalInterestCharged) / months;
         let balance = loanPrincipal;
+        
         for (let i = 1; i <= months; i++) {
             let interest = totalInterestCharged / months;
             let principal = loanPrincipal / months;
