@@ -307,8 +307,8 @@ function calculate(){
         return;
     }
 
-    let principal = price - dp;
-    if(principal < 0) principal = 0;
+    let loanAmount = price; // interest always based on full price
+    let dp = useDP ? (parseFloat(document.getElementById('downpayment').value) || 0) : 0;
 
     if(months === 0){
         document.getElementById('result').innerHTML = `
@@ -320,7 +320,7 @@ function calculate(){
     }
 
     let schedule = [];
-    let balance = principal;
+    let balance = loanAmount;
 
     let totalInterest = 0;
     let totalPrincipal = 0;
@@ -385,6 +385,9 @@ function calculate(){
 
     // 💰 Downpayment applied to last months
     let remainingDP = dp;
+
+// apply DP only to final totals, NOT interest base
+let finalTotalPrincipalPaid = 0;
 
     for(let i=schedule.length-1;i>=0;i--){
         if(remainingDP <= 0) break;
