@@ -12,7 +12,15 @@
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .input-group { display: flex; flex-direction: column; }
         input, select { height: 50px; border: 1px solid #ddd; border-radius: 12px; padding: 0 15px; font-size: 16px; margin-top: 5px; }
-        button { width: 100%; height: 56px; border: none; border-radius: 18px; margin-top: 25px; background: #4285f4; color: #fff; font-size: 17px; cursor: pointer; }
+        
+        /* Button Styles */
+        .button-group { display: flex; gap: 15px; margin-top: 25px; }
+        button { flex: 1; height: 56px; border: none; border-radius: 18px; font-size: 17px; cursor: pointer; transition: 0.2s ease-in-out; }
+        .btn-calc { background: #4285f4; color: #fff; }
+        .btn-calc:hover { background: #3367d6; }
+        .btn-clear { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
+        .btn-clear:hover { background: #e8eaed; }
+
         .table-wrapper { margin-top: 30px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
@@ -55,13 +63,32 @@
             <input type="number" id="rate" placeholder="e.g. 10">
         </div>
     </div>
-    <button type="button" onclick="calculate()">Calculate</button>
+    
+    <div class="button-group">
+        <button type="button" class="btn-clear" onclick="clearForm()">Clear</button>
+        <button type="button" class="btn-calc" onclick="calculate()">Calculate</button>
+    </div>
+    
     <div id="result"></div>
 </div>
 
 <script>
 function peso(num) {
     return "₱" + num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function clearForm() {
+    // Reset all text/number inputs to empty
+    document.getElementById('price').value = '';
+    document.getElementById('downpayment').value = '';
+    document.getElementById('rate').value = '';
+    
+    // Reset dropdowns to their default states
+    document.getElementById('months').value = '12';
+    document.getElementById('interestType').value = 'simple';
+    
+    // Wipe the result HTML
+    document.getElementById('result').innerHTML = '';
 }
 
 function calculate() {
