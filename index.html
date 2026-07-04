@@ -63,7 +63,6 @@
         button { height: 52px; border-radius: var(--radius-md); border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-calc { flex: 1.2; background-color: var(--primary); color: white; }
         .btn-clear { flex: 0.8; background-color: var(--btn-gray); color: var(--text-main); }
-        .btn-matrix { width: 100%; background-color: var(--btn-gray); color: var(--text-main); margin-top: 24px; }
 
         .results-container { margin-top: 24px; display: none; }
         .results-card { background-color: #fcfcfd; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
@@ -123,7 +122,6 @@
         </div>
     </div>
 
-    <button type="button" class="btn-matrix" id="btnMatrix" onclick="toggleMatrix()" style="display:none;">View Add-On Matrix</button>
     <div id="matrixArea" class="table-wrapper"></div>
 </div>
 
@@ -137,13 +135,7 @@ function clearForm() {
     document.getElementById('downpayment').disabled = true;
     document.getElementById('rate').value = '';
     document.getElementById('resultsArea').style.display = 'none';
-    document.getElementById('btnMatrix').style.display = 'none';
     document.getElementById('matrixArea').style.display = 'none';
-}
-
-function toggleMatrix() {
-    const matrix = document.getElementById('matrixArea');
-    matrix.style.display = matrix.style.display === 'none' ? 'block' : 'none';
 }
 
 function calculate() {
@@ -163,7 +155,7 @@ function calculate() {
     document.getElementById('resTotal').innerText = peso(price + totalInterestCharged - dp);
     
     document.getElementById('resultsArea').style.display = 'block';
-    document.getElementById('btnMatrix').style.display = 'block';
+    document.getElementById('matrixArea').style.display = 'block';
 
     let tableHtml = '<table><tr><th>Mo</th><th>Reg. PMT</th><th>DP Applied</th><th>Net Payment</th></tr>';
     let remainingDP = dp;
