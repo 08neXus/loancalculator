@@ -147,10 +147,7 @@ function calculate() {
     if (price <= 0) { alert("Please enter a valid price"); return; }
     
     const totalInterestCharged = price * monthlyRate * months;
-    
-    // CHANGED: The downpayment is no longer subtracted here, keeping it included in the base installments 
-    // so it can be correctly deducted only in the final months of the matrix below.
-    const monthlyPayment = (price + totalInterestCharged) / months;
+    const monthlyPayment = (price + totalInterestCharged - dp) / months;
 
     document.getElementById('resPrincipal').innerText = peso(price);
     document.getElementById('resAddOn').innerText = peso(price * monthlyRate);
