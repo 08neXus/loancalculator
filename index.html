@@ -76,7 +76,6 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); }
         th { background: var(--select-bg); font-weight: 600; color: var(--text-muted); }
-        .dp-text { color: #34c759; }
         .net-text { font-weight: bold; }
     </style>
 </head>
@@ -114,7 +113,7 @@
     <div id="resultsArea" class="results-container">
         <div class="results-card">
             <div class="results-grid">
-                <div class="result-item"><span>Principal</span><strong id="resPrincipal">-</strong></div>
+                <div class="result-item"><span>Net Principal</span><strong id="resPrincipal">-</strong></div>
                 <div class="result-item"><span>Monthly Add-on</span><strong id="resAddOn">-</strong></div>
                 <div class="result-item"><span>Monthly</span><strong id="resMonthly">-</strong></div>
             </div>
@@ -146,32 +145,23 @@ function calculate() {
 
     if (price <= 0) { alert("Please enter a valid price"); return; }
     
-    const totalInterestCharged = price * monthlyRate * months;
-    const monthlyPayment = (price + totalInterestCharged - dp) / months;
+    // Net Principal after downpayment
+    const netPrincipal = price - dp;
+    const totalInterestCharged = netPrincipal * monthlyRate * months;
+    const monthlyPayment = (netPrincipal + totalInterestCharged) / months;
 
-    document.getElementById('resPrincipal').innerText = peso(price);
-    document.getElementById('resAddOn').innerText = peso(price * monthlyRate);
+    document.getElementById('resPrincipal').innerText = peso(netPrincipal);
+    document.getElementById('resAddOn').innerText = peso(netPrincipal * monthlyRate);
     document.getElementById('resMonthly').innerText = peso(monthlyPayment);
-    document.getElementById('resTotal').innerText = peso(price + totalInterestCharged - dp);
+    document.getElementById('resTotal').innerText = peso(netPrincipal + totalInterestCharged);
     
     document.getElementById('resultsArea').style.display = 'block';
     document.getElementById('matrixArea').style.display = 'block';
 
-    let tableHtml = '<table><tr><th>Mo</th><th>Reg. PMT</th><th>DP Applied</th><th>Net Payment</th></tr>';
-    let remainingDP = dp;
-    let rows = [];
-    for(let i=1; i<=months; i++) rows.push({i, payment: monthlyPayment});
-    
-    for(let i=rows.length-1; i>=0; i--) {
-        let applied = Math.min(remainingDP, rows[i].payment);
-        rows[i].dpApplied = applied;
-        rows[i].net = rows[i].payment - applied;
-        remainingDP -= applied;
+    let tableHtml = '<table><tr><th>Mo</th><th>Monthly Payment</th></tr>';
+    for(let i=1; i<=months; i++) {
+        tableHtml += `<tr><td>${i}</td><td class="net-text">${peso(monthlyPayment)}</td></tr>`;
     }
-
-    rows.forEach(r => {
-        tableHtml += `<tr><td>${r.i}</td><td>${peso(r.payment)}</td><td class="dp-text">-${peso(r.dpApplied)}</td><td class="net-text">${peso(r.net)}</td></tr>`;
-    });
     
     document.getElementById('matrixArea').innerHTML = tableHtml + '</table>';
 }
